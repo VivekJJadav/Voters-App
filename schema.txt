@@ -1,0 +1,67 @@
+model Voter {
+  id                       String      @id @default(auto()) @map("_id") @db.ObjectId
+  VoterId                   String?     @unique                   // Optional unique identifier for the voter
+  name                     String
+  email                    String      @unique
+  password                 String
+  isCandidate              Boolean     @default(false)     // Indicates if the voter is a candidate
+  VoteParticipationCount   Int         @default(0)         // Tracks the number of votes the voter participated in
+  CandidateParticipationCount Int      @default(0)         // Tracks how many times the voter has been a candidate
+  winnings                 Vote[]                         // Tracks the votes the voter has won
+  slogans                  Slogan[]                        // Relation to slogans for each vote
+  departments              Department[]                    // Departments the voter belongs to
+}
+
+model Vote {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String
+  candidates    Voter[]       // Relation to voters who are candidates
+  winners       Voter[]       // Relation to voters who won this vote
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  organizationId String      @db.ObjectId  // Foreign key to Organization
+  department    Department   @relation(fields: [departmentId], references: [id])
+  departmentId  String      @db.ObjectId  // Foreign key to Department
+  results       VoteResult[] // Relation to vote results
+}
+
+model VoteResult {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  voteId       String   @db.ObjectId         // Foreign key to Vote
+  vote         Vote     @relation(fields: [voteId], references: [id])
+  candidateId  String   @db.ObjectId         // Foreign key to Voter (candidate)
+  candidate    Voter    @relation(fields: [candidateId], references: [id])
+  voteCount    Int      @default(0)         // Number of votes received by the candidate
+  isWinner     Boolean  @default(false)     // Indicates if the candidate is the winner
+  statistics   Json     // Additional statistics (e.g., percentage, etc.)
+}
+
+model Slogan {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String   // Slogan content
+  voteId    String   @db.ObjectId        // Foreign key to Vote
+  vote      Vote     @relation(fields: [voteId], references: [id])
+  voterId   String   @db.ObjectId        // Foreign key to Voter
+  voter     Voter    @relation(fields: [voterId], references: [id])
+}
+
+model Organization {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  creator      Voter        @relation(fields: [creatorId], references: [id])
+  creatorId    String       @db.ObjectId         // Foreign key to Voter
+  votes        Vote[]       // Votes conducted by the organization
+  departments  Department[] // Departments within the organization
+}
+
+model Department {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  parentId     String?      @db.ObjectId          // Optional field for self-referencing
+  parent       Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children     Department[] @relation("DepartmentHierarchy") // Child departments
+  voters        Voter[]      // Voters in this department
+  organization Organization @relation(fields: [organizationId], references: [id])
+  organizationId String   @db.ObjectId // Foreign key to Organization
+  votes        Vote[]     // Votes conducted in this department
+}
