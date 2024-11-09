@@ -1,11 +1,9 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-
 import { Bell, Menu } from "lucide-react";
 import { useScrollTop } from "@/hooks/use-scroll-top";
 import { cn } from "@/lib/utils";
-import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import { useMedia } from "react-use";
 import { Button } from "@/components/ui/button";
 import Selector from "@/components/Selector";
@@ -42,7 +40,6 @@ const values = ["organization 1", "organization 2"];
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMedia("(max-width: 1024px)", false);
-  const { isSignedIn } = useUser();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -64,7 +61,7 @@ const Navbar = () => {
       <nav className="justify-between flex pt-7 px-5">
         {isMobile ? (
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger>
+            <SheetTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
@@ -90,10 +87,9 @@ const Navbar = () => {
           </Sheet>
         ) : (
           <div className="justify-start text-center">
-            {/* <Image src="" alt="Logo" width={10} height={10}/> */}
             <ul className="flex space-x-2">
-              {routes.map((item, index) => (
-                <NavButton href={item.href} label={item.label} />
+              {routes.map((item) => (
+                <NavButton key={item.href} href={item.href} label={item.label} />
               ))}
             </ul>
           </div>
@@ -102,7 +98,7 @@ const Navbar = () => {
           <div className="w-8 h-8 bg-transparent border-[1px] rounded-sm border-blue-500 hover:border-black/40 flex items-center justify-center mt-[1px]">
             <NotifiactionDropdown />
           </div>
-          {isSignedIn ? (
+          {/* {isSignedIn ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
             <SignInButton mode="modal">
@@ -110,7 +106,7 @@ const Navbar = () => {
                 Sign in
               </Button>
             </SignInButton>
-          )}
+          )} */}
         </div>
       </nav>
       <div className="lg:w-60 z-50 pt-8 px-7">
