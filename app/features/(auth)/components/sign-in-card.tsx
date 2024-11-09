@@ -1,10 +1,12 @@
+// import { z } from "zod";
+
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 
-import client from "@/app/libs/prismadb";
-import { zodResolver } from "@hookform/resolvers/zod";
+// import { zodResolver } from "@hookform/resolvers/zod";
 
+import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,23 +18,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Link from "next/link";
-import { DottedSeparator } from "@/components/dotted-separator";
+import client from "@/app/libs/prismadb";
 // import { loginSchema } from "../schemas";
 // import { useLogin } from "../api/use-login";
 
 export const SignInCard = () => {
   // const { mutate } = useLogin();
 
-  const form = useForm<typeof client.voter>({
-    resolver: zodResolver(client.voter),
+  const form = useForm({
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = (values: z.infer<typeof client.voter>) => {
-    mutate({ json: values });
+  const onSubmit = (values: typeof client.voter) => {
+    // mutate({ json: values });
+    console.log(values)
   };
 
   return (
@@ -45,7 +47,7 @@ export const SignInCard = () => {
       </div>
       <CardContent className="p-7">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form className="space-y-4">
             <FormField
               name="email"
               control={form.control}
