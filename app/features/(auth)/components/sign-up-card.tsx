@@ -1,11 +1,18 @@
+import axios from "axios";
+
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
 
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -15,46 +22,48 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Link from "next/link";
-import axios from "axios";
+import client from "@/app/libs/prismadb";
+import { toast } from "sonner";
 
-export const SignInCard = () => {
-  const [isLoading, setIsLoading] = useState(false);
+export const SignUpCard = () => {
   const form = useForm({
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (values: { email: string; password: string }) => {
-    setIsLoading(true);
+  const onSubmit = async (values: {
+    name: string;
+    email: string;
+    password: string;
+  }) => {
     try {
-      const response = await axios.post("/api/login", values);
-      console.log("Sign-in successful:", response.data);
-  
-      // Redirect to dashboard or handle success
-      if (response.status === 200 || response.status === 302) {
-        window.location.href = "/";
-      }
+      const response = await axios.post("/api/register", values);
+      toast.success("User registered successfully!");
+      console.log(response.data);
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error response data:", error.response?.data);
-        alert(error.response?.data?.error || "Sign-in failed.");
-      } else {
-        console.error("Unexpected error:", error);
-        alert("An unexpected error occurred.");
-      }
-    } finally {
-      setIsLoading(false);
+      toast.error("Something went wrong");
+      console.error(error);
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full h-full md:w-[487px] border-none shadow-none">
         <CardHeader className="flex items-center justify-center text-center p-7">
-          <CardTitle className="text-2xl">Welcome back!</CardTitle>
+          <CardTitle className="text-2xl">Sign Up</CardTitle>
+          <CardDescription>
+            By signing up, you agree to our{" "}
+            <Link href="/privacy">
+              <span className="text-blue-700">Privacy Policy</span>
+            </Link>{" "}
+            and{" "}
+            <Link href="/terms">
+              <span className="text-blue-700">Terms of service</span>
+            </Link>
+          </CardDescription>
         </CardHeader>
         <div className="px-7">
           <DottedSeparator />
@@ -62,6 +71,22 @@ export const SignInCard = () => {
         <CardContent className="p-7">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                name="name"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        placeholder="Enter your name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 name="email"
                 control={form.control}
@@ -72,7 +97,6 @@ export const SignInCard = () => {
                         {...field}
                         type="email"
                         placeholder="Enter email address"
-                        required
                       />
                     </FormControl>
                     <FormMessage />
@@ -88,21 +112,15 @@ export const SignInCard = () => {
                       <Input
                         {...field}
                         type="password"
-                        placeholder="Enter password"
-                        required
+                        placeholder="Enter your password"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                disabled={isLoading}
-                size="lg"
-                className="w-full"
-              >
-                {isLoading ? "Signing in..." : "Login"}
+              <Button disabled={false} size="lg" className="w-full">
+                Login
               </Button>
             </form>
           </Form>
@@ -115,7 +133,7 @@ export const SignInCard = () => {
             variant="secondary"
             size="lg"
             className="w-full"
-            disabled={isLoading}
+            disabled={false}
           >
             <FcGoogle className="mr-2 size-5" />
             Login with Google
@@ -124,7 +142,7 @@ export const SignInCard = () => {
             variant="secondary"
             size="lg"
             className="w-full"
-            disabled={isLoading}
+            disabled={false}
           >
             <FaGithub className="mr-2 size-5" />
             Login with Github
@@ -135,9 +153,9 @@ export const SignInCard = () => {
         </div>
         <CardContent className="p-7 flex items-center justify-center">
           <p>
-            Don&apos;t have an account?
-            <Link href="/sign-up">
-              <span className="text-blue-700">&nbsp;Sign Up</span>
+            Already have an account?
+            <Link href="/sign-in">
+              <span className="text-blue-700">&nbsp;Sign In</span>
             </Link>
           </p>
         </CardContent>
