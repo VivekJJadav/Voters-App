@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Bell } from "lucide-react";
 
-const NotifiactionDropdown = () => {
+const NotificationDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -27,4 +27,4 @@ const NotifiactionDropdown = () => {
   );
 };
 
-export default NotifiactionDropdown;
+export default NotificationDropdown;

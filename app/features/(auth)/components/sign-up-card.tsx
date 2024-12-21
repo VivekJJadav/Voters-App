@@ -1,3 +1,5 @@
+"use client";
+
 import axios from "axios";
 
 import { FcGoogle } from "react-icons/fc";
@@ -22,7 +24,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Link from "next/link";
-import client from "@/app/libs/prismadb";
 import { toast } from "sonner";
 
 export const SignUpCard = () => {
@@ -120,7 +121,7 @@ export const SignUpCard = () => {
                 )}
               />
               <Button disabled={false} size="lg" className="w-full">
-                Login
+                Sign up
               </Button>
             </form>
           </Form>

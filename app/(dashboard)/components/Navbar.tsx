@@ -10,12 +10,14 @@ import Selector from "@/components/Selector";
 import NavButton from "./NavButton";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
-import NotifiactionDropdown from "./NotificationDropdown";
+import NotificationDropdown from "./NotificationDropdown";
+import useAuthStore from "@/store/authStore";
+import shallow from "zustand/shallow";
 
 const routes = [
   {
     label: "Home",
-    href: "/",
+    href: "/home",
   },
   {
     label: "Organizations",
@@ -41,14 +43,28 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMedia("(max-width: 1024px)", false);
 
+  const user  = useAuthStore((state) => state.user);
+
+  const logout = useAuthStore((state) => state.logout);
+
   const pathname = usePathname();
   const router = useRouter();
 
   const scrolled = useScrollTop();
 
-  const onClick = (href: string) => {
-    router.push(href);
-    setIsOpen(false);
+  const onClick = async (href: string) => {
+    try {
+      await router.push(href);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Navigation failed:", error);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+
+    router.push("/sign-in");
   };
 
   return (
@@ -89,28 +105,24 @@ const Navbar = () => {
           <div className="justify-start text-center">
             <ul className="flex space-x-2">
               {routes.map((item) => (
-                <NavButton key={item.href} href={item.href} label={item.label} />
+                <NavButton
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                />
               ))}
             </ul>
           </div>
         )}
         <div className="flex absolute right-4 gap-2">
           <div className="w-8 h-8 bg-transparent border-[1px] rounded-sm border-blue-500 hover:border-black/40 flex items-center justify-center mt-[1px]">
-            <NotifiactionDropdown />
+            <NotificationDropdown />
           </div>
-          {/* {isSignedIn ? (
-            <UserButton afterSignOutUrl="/" />
-          ) : (
-            <SignInButton mode="modal">
-              <Button className="bg-blue-500 hover:bg-blue-600 mr-2">
-                Sign in
-              </Button>
-            </SignInButton>
-          )} */}
+          {user && <Button onClick={handleLogout}>Log out</Button>}
         </div>
       </nav>
-      <div className="lg:w-60 z-50 pt-8 px-7">
-        <Selector values={values} placeholder="Select a organization" />
+      <div className="lg:w-60 w-full z-50 pt-8 px-7">
+        <Selector values={values} placeholder="Select an organization" />
       </div>
     </div>
   );

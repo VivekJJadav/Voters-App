@@ -3,6 +3,8 @@ import { FaGithub } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 
+import useAuthStore from "@/store/authStore";
+
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +21,8 @@ import axios from "axios";
 
 export const SignInCard = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const setUser = useAuthStore((state) => state.setUser);
+
   const form = useForm({
     defaultValues: {
       email: "",
@@ -31,10 +35,11 @@ export const SignInCard = () => {
     try {
       const response = await axios.post("/api/login", values);
       console.log("Sign-in successful:", response.data);
-  
-      // Redirect to dashboard or handle success
+
+      setUser(response.data.user, response.data.token);
+
       if (response.status === 200 || response.status === 302) {
-        window.location.href = "/";
+        window.location.href = "/home";
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -48,7 +53,6 @@ export const SignInCard = () => {
       setIsLoading(false);
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen">
