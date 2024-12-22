@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import Navbar from "@/app/(dashboard)/components/Navbar";
 
 type Props = {
@@ -9,6 +10,7 @@ export default function RootLayout({ children }: Props) {
     <>
       <Navbar />
       <div>{children}</div>
+      <Toaster />
     </>
   );
 }

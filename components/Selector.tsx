@@ -1,5 +1,6 @@
 "use client";
 
+import useGetOrganizations from "@/app/actions/useGetOrganizations";
 import {
   Select,
   SelectContent,
@@ -14,15 +15,18 @@ interface SelectorProps {
 }
 
 const Selector = ({ values, placeholder }: SelectorProps) => {
+  const { organizations, loading, error } =
+    useGetOrganizations();
+
   return (
     <Select>
       <SelectTrigger className="text-black bg-white/50 border-blue-600 file:rounded-lg">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {values.map((value, index) => (
-          <SelectItem key={index} value={value}>
-            {value}
+        {organizations.map((org) => (
+          <SelectItem key={org.id} value={org.name}>
+            {org.name}
           </SelectItem>
         ))}
       </SelectContent>
