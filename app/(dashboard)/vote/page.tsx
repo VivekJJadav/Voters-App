@@ -36,11 +36,11 @@ const votes = [
 const Vote = () => {
   return (
     <div className="flex flex-col">
-      <div className="py-2 px-2 mt-44 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white">
+      <div className="py-2 px-2 mt-28 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white">
         <NewVotingDialog label="Create your own voting" />
         <NewOrganizationDialog label="Create new organization" />
       </div>
-      <div className="ml-[80px] mr-[80px] mt-[280px] lg:mt-[235px] md:mt-[235px] flex flex-wrap gap-4">
+      <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap gap-4">
         {votes.map((vote) => (
           <Votes vote={vote} />
         ))}

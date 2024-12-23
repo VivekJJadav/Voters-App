@@ -18,7 +18,6 @@ const organizationStore = {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);
-      return;
     };
   },
 
@@ -33,6 +32,18 @@ const organizationStore = {
 
   addOrganization(org: Organization) {
     this.organizations = [...this.organizations, org];
+    this.notify();
+  },
+
+  deleteOrganization(id: string) {
+    this.organizations = this.organizations.filter((org) => org.id !== id);
+    this.notify();
+  },
+
+  updateOrganization(updatedOrg: Organization) {
+    this.organizations = this.organizations.map((org) =>
+      org.id === updatedOrg.id ? updatedOrg : org
+    );
     this.notify();
   },
 };
@@ -80,7 +91,42 @@ const useGetOrganizations = () => {
     organizationStore.addOrganization(newOrg);
   };
 
-  return { organizations, loading, error, handleNewOrganization };
+  const handleDeleteOrganization = async (id: string) => {
+    try {
+      organizationStore.deleteOrganization(id);
+      
+
+      await axios.delete(`/api/organization/${id}`);
+    } catch (error) {
+      console.error("Error deleting organization:", error);
+      const response = await axios.get(`/api/organization/${user?.id}`);
+      organizationStore.setOrganizations(response.data || []);
+      throw error; 
+    }
+  };
+
+  const handleUpdateOrganization = async (updatedOrg: Organization) => {
+    try {
+      const response = await axios.put(
+        `/api/organization/${updatedOrg.id}`,
+        updatedOrg
+      );
+      const updatedData = response.data;
+      organizationStore.updateOrganization(updatedData);
+    } catch (error) {
+      console.error("Error updating organization:", error);
+      setError("Failed to update organization. Please try again later.");
+    }
+  };
+
+  return {
+    organizations,
+    loading,
+    error,
+    handleNewOrganization,
+    handleDeleteOrganization,
+    handleUpdateOrganization,
+  };
 };
 
 export default useGetOrganizations;

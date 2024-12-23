@@ -24,12 +24,12 @@ const Organization = () => {
             label="Create a new organization"
             onSuccess={(Org) => handleNewOrganization(Org)}
           />
-          {/* <div className="lg:w-60 w-full z-50 px-4">
+          <div className="lg:w-60 w-full z-50 px-4">
             <SelectorForm
               values={organizations}
               placeholder="Select an organization"
             />
-          </div> */}
+          </div>
         </div>
       </div>
       <div className="flex mt-44 h-[calc(100vh-190px)] fixed w-full">
@@ -56,7 +56,9 @@ const Organization = () => {
           )}
         </div>
         <div className="w-full md:w-4/5 overflow-y-auto bg-gray-100 p-4 rounded-lg mr-3">
-          <OrganizationPage orgId={selectedOrgId || "Your Organization"} />
+          <OrganizationPage
+            orgId={selectedOrgId || "Your Organization"}
+          />
         </div>
       </div>
     </div>
