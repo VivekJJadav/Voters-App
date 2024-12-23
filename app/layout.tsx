@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import AuthProvider from "./features/(auth)/providers/authProvider";
+import { SelectedOrganizationProvider } from "@/context/SelectedOrganizationContext";
 
 export const metadata: Metadata = {
   title: "The Voters",
@@ -16,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <SelectedOrganizationProvider>
+            {children}
+          </SelectedOrganizationProvider>
+        </AuthProvider>
       </body>
     </html>
   );

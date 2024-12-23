@@ -6,7 +6,7 @@ import { useScrollTop } from "@/hooks/use-scroll-top";
 import { cn } from "@/lib/utils";
 import { useMedia } from "react-use";
 import { Button } from "@/components/ui/button";
-import Selector from "@/components/Selector";
+import Selector from "@/components/SelectorForm";
 import NavButton from "./NavButton";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
@@ -36,8 +36,6 @@ const routes = [
     href: "/settings",
   },
 ];
-
-const values = ["organization 1", "organization 2"];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,7 +68,7 @@ const Navbar = () => {
   return (
     <div
       className={cn(
-        "z-50 bg-gradient-to-b from-blue-700 to-blue-600 h-40 w-full fixed",
+        "z-50 bg-gradient-to-b from-blue-700 to-blue-600 h-24 w-full fixed",
         scrolled && "border-b shadow-sm"
       )}
     >
@@ -121,9 +119,9 @@ const Navbar = () => {
           {user && <Button onClick={handleLogout}>Log out</Button>}
         </div>
       </nav>
-      <div className="lg:w-60 w-full z-50 pt-8 px-7">
-        <Selector values={values} placeholder="Select an organization" />
-      </div>
+      {/* <div className="lg:w-60 w-full z-50 pt-8 px-7">
+        <Selector placeholder="Select an organization" />
+      </div> */}
     </div>
   );
 };
