@@ -1,7 +1,6 @@
 import client from "@/app/libs/prismadb";
 import { NextResponse } from "next/server";
 
-// POST: Create a new department
 export async function POST(request: Request) {
   try {
     const { name, parentId, organizationId } = await request.json();
@@ -80,6 +79,49 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         error: "Failed to fetch departments.",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Department ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const department = await client.department.findUnique({
+      where: { id },
+    });
+
+    if (!department) {
+      return NextResponse.json(
+        { error: "Department not found." },
+        { status: 404 }
+      );
+    }
+
+    await client.department.delete({
+      where: { id },
+    });
+
+    return NextResponse.json(
+      { message: "Department deleted successfully." },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting department:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to delete department.",
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }

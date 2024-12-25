@@ -20,23 +20,18 @@ import {
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import {
-  Select,
-  SelectItem,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Department } from "@prisma/client";
+import SelectDepartmentForm from "./SelectDepartmentForm";
 
 interface NewDepartmentDialogProps {
   label: string;
   organizationId: string;
   onSuccess?: (department: Department) => void;
+  departments: Department[];
 }
 
 interface FormValues {
@@ -49,6 +44,7 @@ const NewDepartmentDialog = ({
   label,
   organizationId,
   onSuccess,
+  departments,
 }: NewDepartmentDialogProps) => {
   const user = useAuthStore((state) => state.user);
   const [isOpen, setIsOpen] = useState(false);
@@ -155,19 +151,10 @@ const NewDepartmentDialog = ({
                     Parent Department (optional)
                   </Label>
                   <FormControl>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(value === "null" ? null : value)
-                      }
-                      value={field.value || "null"}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a parent department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="null">None</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectDepartmentForm
+                      placeholder="Select the parent department"
+                      values={departments}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

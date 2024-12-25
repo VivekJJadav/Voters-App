@@ -43,8 +43,6 @@ export async function POST(request: Request) {
       .setExpirationTime(TOKEN_EXPIRATION)
       .sign(new TextEncoder().encode(JWT_SECRET));
 
-    console.log("Login successful for user:", user.email);
-
     const response = NextResponse.json(
       { message: "Login successful", user },
       { status: 200 }

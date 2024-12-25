@@ -34,7 +34,6 @@ export const SignInCard = () => {
     setIsLoading(true);
     try {
       const response = await axios.post("/api/login", values);
-      console.log("Sign-in successful:", response.data);
 
       setUser(response.data.user, response.data.token);
 

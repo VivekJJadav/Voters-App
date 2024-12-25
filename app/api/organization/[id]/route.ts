@@ -7,8 +7,6 @@ export async function GET(
 ) {
   const { id } = params;
 
-  console.log(id);
-
   if (!id) {
     return NextResponse.json(
       { error: "Creator ID is required" },
@@ -31,8 +29,6 @@ export async function GET(
       },
     });
 
-    console.log(organizations);
-
     return NextResponse.json(organizations || [], { status: 200 });
   } catch (error) {
     console.error("Error fetching organizations:", error);
@@ -48,8 +44,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
-
-  console.log(`Delete Request for Organization ID: ${id}`);
 
   if (!id) {
     return NextResponse.json(
@@ -81,8 +75,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const { id } = params;
-
-  console.log(`Update Request for Organization ID: ${id}`);
 
   if (!id) {
     return NextResponse.json(

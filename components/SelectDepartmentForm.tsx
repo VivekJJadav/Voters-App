@@ -15,22 +15,28 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 
-interface SelectorProps {
+interface SelectDepartmentFormProps {
   placeholder?: string;
   values: { id: string; name: string }[];
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
-const SelectorForm = ({ placeholder, values }: SelectorProps) => {
-  const { setSelectedOrgId } = useSelectedOrganization();
-
-  const form = useForm<{ selectedOrganization: string }>({
-    defaultValues: { selectedOrganization: "" },
+const SelectDepartmentForm = ({
+  placeholder,
+  values,
+  value,
+  onChange,
+}: SelectDepartmentFormProps) => {
+  const form = useForm<{ selectedDepartment: string }>({
+    defaultValues: { selectedDepartment: value || "" },
   });
 
-  const onSubmit = (data: { selectedOrganization: string }) => {
-    setSelectedOrgId(data.selectedOrganization);
+  const onSubmit = (data: { selectedDepartment: string }) => {
+    if (onChange) {
+      onChange(data.selectedDepartment);
+    }
   };
 
   return (
@@ -38,26 +44,26 @@ const SelectorForm = ({ placeholder, values }: SelectorProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
         <FormField
           control={form.control}
-          name="selectedOrganization"
+          name="selectedDepartment"
           render={({ field }) => (
             <FormItem>
               <Select
-                onValueChange={(value) => {
-                  field.onChange(value); 
+                value={value}
+                onValueChange={(newValue) => {
+                  field.onChange(newValue);
                   form.handleSubmit((data) => {
-                    onSubmit(data); 
-                    form.reset({ selectedOrganization: "" }); 
+                    onSubmit(data);
+                    form.reset({ selectedDepartment: newValue });
                   })();
                 }}
               >
                 <FormControl>
                   <SelectTrigger className="text-black bg-white/50 border-blue-600 rounded-lg">
-                    <SelectValue
-                      placeholder={placeholder || "Select an organization"}
-                    />
+                    <SelectValue placeholder={placeholder || "Select an option"} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  <SelectItem value="null">None</SelectItem>
                   {values.map((value) => (
                     <SelectItem key={value.id} value={value.id}>
                       {value.name}
@@ -74,4 +80,4 @@ const SelectorForm = ({ placeholder, values }: SelectorProps) => {
   );
 };
 
-export default SelectorForm;
+export default SelectDepartmentForm;

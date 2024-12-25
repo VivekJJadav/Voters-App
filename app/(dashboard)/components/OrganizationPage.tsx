@@ -13,7 +13,8 @@ interface OrganizationPageProps {
 const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { organizations, handleDeleteOrganization } = useGetOrganizations();
-  const { departments, handleNewDepartment } = useGetDepartments(orgId);
+  const { departments, handleNewDepartment, handleDeleteDepartment, loading } =
+    useGetDepartments(orgId);
 
   const currentOrg = organizations.find((org) => org.id === orgId);
 
@@ -49,14 +50,8 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         <NewDepartmentDialog
           label="Create a new department"
           organizationId={currentOrg.id}
-          onSuccess={async (newDepartment) => {
-            try {
-              await handleNewDepartment(newDepartment);
-              toast.success("Department created successfully");
-            } catch (error) {
-              toast.error("Failed to create department");
-            }
-          }}
+          onSuccess={handleNewDepartment}
+          departments={departments}
         />
         <div className="flex-1 text-center text-lg font-medium text-gray-700">
           {currentOrg.name}
@@ -80,15 +75,26 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
       </div>
       <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded-lg">
         <h2 className="text-lg font-semibold mb-4">Departments</h2>
-        <div className="space-y-2">
-          {departments.length !== 0 ? (
-            departments.map((dep) => <Department dep={dep} />)
-          ) : (
-            <p>
-              No departments are available. Please create one to conduct voting.
-            </p>
-          )}
-        </div>
+        {!loading ? (
+          <div className="space-y-2">
+            {departments.length !== 0 ? (
+              departments.map((dep) => (
+                <Department
+                  key={dep.id}
+                  handleDeleteDepartment={handleDeleteDepartment}
+                  dep={dep}
+                />
+              ))
+            ) : (
+              <p>
+                No departments are available. Please create one to conduct
+                voting.
+              </p>
+            )}
+          </div>
+        ) : (
+          <p>Loading departments...</p>
+        )}
       </div>
     </div>
   );

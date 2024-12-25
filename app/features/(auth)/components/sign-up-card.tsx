@@ -43,7 +43,6 @@ export const SignUpCard = () => {
     try {
       const response = await axios.post("/api/register", values);
       toast.success("User registered successfully!");
-      console.log(response.data);
     } catch (error) {
       toast.error("Something went wrong");
       console.error(error);

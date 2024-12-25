@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
 import { Department } from "@prisma/client";
+import { toast } from "sonner";
 
 type Listener = () => void;
 
@@ -92,25 +93,44 @@ const useGetDepartments = (organizationId: string) => {
       });
       const createdDep = response.data;
       departmentStore.addDepartment(createdDep);
-      return createdDep; 
+
+      toast.success("Department created successfully");
+
+      return createdDep;
     } catch (error) {
       console.error("Error creating department:", error);
+
+      toast.error("Failed to create department. Please try again later.");
+
       setError("Failed to create department. Please try again later.");
       throw error;
     }
   };
 
   const handleDeleteDepartment = async (id: string) => {
+    if (!organizationId) {
+      console.error("OrganizationId is missing");
+      return;
+    }
+
     try {
       departmentStore.deleteDepartment(id);
 
-      await axios.delete(`/api/department/${id}`);
+      await axios.delete("/api/department", {
+        headers: { organizationId },
+        data: { id },
+      });
+
+      toast.success("Department deleted successfully");
     } catch (error) {
       console.error("Error deleting department:", error);
+
       const response = await axios.get("/api/department", {
         headers: { organizationId },
       });
       departmentStore.setDepartments(response.data || []);
+
+      toast.error("Failed to delete department");
       throw error;
     }
   };
