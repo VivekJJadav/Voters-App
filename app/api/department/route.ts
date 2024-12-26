@@ -88,8 +88,16 @@ export async function GET(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const organizationId = request.headers.get("organizationid");
     const body = await request.json();
-    const { id } = body;
+    const { id, childIds } = body;
+
+    if (!organizationId) {
+      return NextResponse.json(
+        { error: "organizationId header is required" },
+        { status: 400 }
+      );
+    }
 
     if (!id) {
       return NextResponse.json(
@@ -98,23 +106,32 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const department = await client.department.findUnique({
-      where: { id },
-    });
+    await client.$transaction(async (prisma) => {
+      if (childIds && childIds.length > 0) {
+        const sortedChildIds = [...childIds].sort((a, b) => {
+          return childIds.indexOf(b) - childIds.indexOf(a);
+        });
 
-    if (!department) {
-      return NextResponse.json(
-        { error: "Department not found." },
-        { status: 404 }
-      );
-    }
+        for (const childId of sortedChildIds) {
+          await prisma.department.delete({
+            where: {
+              id: childId,
+              organizationId,
+            },
+          });
+        }
+      }
 
-    await client.department.delete({
-      where: { id },
+      await prisma.department.delete({
+        where: {
+          id,
+          organizationId,
+        },
+      });
     });
 
     return NextResponse.json(
-      { message: "Department deleted successfully." },
+      { message: "Department and all sub-departments deleted successfully." },
       { status: 200 }
     );
   } catch (error) {

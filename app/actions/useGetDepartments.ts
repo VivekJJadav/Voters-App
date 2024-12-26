@@ -87,9 +87,11 @@ const useGetDepartments = (organizationId: string) => {
 
   const handleNewDepartment = async (newDep: Department) => {
     try {
+      console.log("Department being sent to API:", newDep); 
       const response = await axios.post("/api/department", {
-        ...newDep,
-        organizationId,
+        name: newDep.name,
+        parentId: newDep.parentId,
+        organizationId: organizationId,
       });
       const createdDep = response.data;
       departmentStore.addDepartment(createdDep);
@@ -99,36 +101,68 @@ const useGetDepartments = (organizationId: string) => {
       return createdDep;
     } catch (error) {
       console.error("Error creating department:", error);
-
       toast.error("Failed to create department. Please try again later.");
-
-      setError("Failed to create department. Please try again later.");
       throw error;
     }
   };
 
+  const getAllChildDepartmentIds = (
+    departments: Department[],
+    parentId: string,
+    collectedIds: string[] = []
+  ): string[] => {
+    const childDepartments = departments.filter(
+      (dept) => dept.parentId === parentId
+    );
+
+    childDepartments.forEach((child) => {
+      getAllChildDepartmentIds(departments, child.id, collectedIds);
+      collectedIds.push(child.id);
+    });
+
+    return collectedIds;
+  };
+
   const handleDeleteDepartment = async (id: string) => {
     if (!organizationId) {
-      console.error("OrganizationId is missing");
+      toast.error("Organization ID is missing");
       return;
     }
 
     try {
-      departmentStore.deleteDepartment(id);
+      const childIds = getAllChildDepartmentIds(
+        departmentStore.departments,
+        id
+      );
 
       await axios.delete("/api/department", {
-        headers: { organizationId },
-        data: { id },
+        headers: {
+          organizationId: organizationId,
+          "Content-Type": "application/json",
+        },
+        data: {
+          id,
+          childIds,
+        },
       });
+
+      childIds.forEach((childId) => {
+        departmentStore.deleteDepartment(childId);
+      });
+      departmentStore.deleteDepartment(id);
 
       toast.success("Department deleted successfully");
     } catch (error) {
       console.error("Error deleting department:", error);
 
-      const response = await axios.get("/api/department", {
-        headers: { organizationId },
-      });
-      departmentStore.setDepartments(response.data || []);
+      try {
+        const response = await axios.get("/api/department", {
+          headers: { organizationId },
+        });
+        departmentStore.setDepartments(response.data || []);
+      } catch (refreshError) {
+        console.error("Error refreshing departments:", refreshError);
+      }
 
       toast.error("Failed to delete department");
       throw error;

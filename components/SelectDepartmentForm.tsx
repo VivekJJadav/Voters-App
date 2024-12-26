@@ -33,15 +33,9 @@ const SelectDepartmentForm = ({
     defaultValues: { selectedDepartment: value || "" },
   });
 
-  const onSubmit = (data: { selectedDepartment: string }) => {
-    if (onChange) {
-      onChange(data.selectedDepartment);
-    }
-  };
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+      <form className="w-full space-y-6">
         <FormField
           control={form.control}
           name="selectedDepartment"
@@ -50,16 +44,16 @@ const SelectDepartmentForm = ({
               <Select
                 value={value}
                 onValueChange={(newValue) => {
-                  field.onChange(newValue);
-                  form.handleSubmit((data) => {
-                    onSubmit(data);
-                    form.reset({ selectedDepartment: newValue });
-                  })();
+                  if (onChange) {
+                    onChange(newValue);
+                  }
                 }}
               >
                 <FormControl>
                   <SelectTrigger className="text-black bg-white/50 border-blue-600 rounded-lg">
-                    <SelectValue placeholder={placeholder || "Select an option"} />
+                    <SelectValue
+                      placeholder={placeholder || "Select an option"}
+                    />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

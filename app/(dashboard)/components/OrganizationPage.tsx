@@ -78,13 +78,11 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         {!loading ? (
           <div className="space-y-2">
             {departments.length !== 0 ? (
-              departments.map((dep) => (
-                <Department
-                  key={dep.id}
-                  handleDeleteDepartment={handleDeleteDepartment}
-                  dep={dep}
-                />
-              ))
+              <Department
+                departments={departments}
+                handleDeleteDepartment={handleDeleteDepartment}
+                organizationId={currentOrg.id}
+              />
             ) : (
               <p>
                 No departments are available. Please create one to conduct

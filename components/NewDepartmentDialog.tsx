@@ -22,16 +22,19 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useState } from "react";
+import { RefObject, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Department } from "@prisma/client";
 import SelectDepartmentForm from "./SelectDepartmentForm";
+import { cn } from "@/lib/utils";
 
 interface NewDepartmentDialogProps {
   label: string;
   organizationId: string;
   onSuccess?: (department: Department) => void;
   departments: Department[];
+  triggerRef?: RefObject<HTMLButtonElement>;
+  parentId?: string | null;
 }
 
 interface FormValues {
@@ -45,18 +48,26 @@ const NewDepartmentDialog = ({
   organizationId,
   onSuccess,
   departments,
+  triggerRef,
+  parentId,
 }: NewDepartmentDialogProps) => {
-  const user = useAuthStore((state) => state.user);
   const [isOpen, setIsOpen] = useState(false);
+  const user = useAuthStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
     defaultValues: {
       name: "",
-      parentId: null,
       organizationId,
+      parentId: null,
     },
   });
+
+  useEffect(() => {
+    if (parentId !== undefined) {
+      form.setValue("parentId", parentId);
+    }
+  }, [parentId, form]);
 
   const onSubmit = async (values: FormValues) => {
     if (!user) {
@@ -72,7 +83,7 @@ const NewDepartmentDialog = ({
     setIsLoading(true);
     try {
       if (onSuccess) {
-        await onSuccess({
+        onSuccess({
           name: values.name,
           parentId: values.parentId === "null" ? null : values.parentId,
           organizationId: values.organizationId,
@@ -99,11 +110,27 @@ const NewDepartmentDialog = ({
     }
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        name: "",
+        organizationId,
+        parentId: parentId || null,
+      });
+    }
+  }, [isOpen, organizationId, parentId, form]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base">
-          Make a department
+        <Button
+          ref={triggerRef}
+          className={cn(
+            "text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base",
+            label === "Create a new department" ? "block sm:block" : "hidden"
+          )}
+        >
+          {label}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -154,6 +181,8 @@ const NewDepartmentDialog = ({
                     <SelectDepartmentForm
                       placeholder="Select the parent department"
                       values={departments}
+                      value={field.value ?? "null"}
+                      onChange={(value) => field.onChange(value)}
                     />
                   </FormControl>
                   <FormMessage />

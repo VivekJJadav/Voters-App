@@ -1,23 +1,25 @@
-import useGetDepartments from "@/app/actions/useGetDepartments";
-import { Button } from "@/components/ui/button";
 import { Department } from "@prisma/client";
+import DepartmentList from "@/components/DepartmentList";
 
 interface DepartmentProps {
-  dep: Department;
+  departments: Department[];
   handleDeleteDepartment: (id: string) => void;
+  organizationId: string;
 }
 
-const Department = ({ dep, handleDeleteDepartment }: DepartmentProps) => {
+const Department = ({
+  departments,
+  handleDeleteDepartment,
+  organizationId,
+}: DepartmentProps) => {
   return (
-    <div
-      key={dep.id}
-      className="p-4 border-[1px] border-gray-400 rounded-lg bg-white shadow-sm flex items-center justify-between"
-    >
-      <h3 className="font-medium text-gray-800">{dep.name}</h3>
-      <Button className="bg-red-500" onClick={() => handleDeleteDepartment(dep.id)}>
-        Delete
-      </Button>
-    </div>
+    <DepartmentList
+      departments={departments}
+      handleDeleteDepartment={handleDeleteDepartment}
+      organizationId={organizationId}
+      parentId={null}
+      level={0}
+    />
   );
 };
 
