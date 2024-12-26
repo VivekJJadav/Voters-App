@@ -42,14 +42,14 @@ const DepartmentList = ({
   const handleNewDepartmentWithHierarchy = async (
     newDepartment: Department
   ) => {
-    console.log("Selected Parent ID:", selectedParentId); // Debug log
+    console.log("Selected Parent ID:", selectedParentId); 
     const departmentWithHierarchy = {
       ...newDepartment,
       parentId: selectedParentId,
       organizationId: organizationId,
     };
 
-    console.log("Department with hierarchy:", departmentWithHierarchy); // Debug log
+    console.log("Department with hierarchy:", departmentWithHierarchy); 
     await handleNewDepartment(departmentWithHierarchy);
     if (selectedParentId) {
       setExpanded((prev) => ({
@@ -81,7 +81,7 @@ const DepartmentList = ({
       {currentLevelDepartments.map((department) => (
         <div key={department.id}>
           <div
-            style={{ marginLeft: `${level * 1.5}rem` }}
+            style={{ marginLeft: `${level * 2}rem` }}
             className="p-4 border-[1px] border-gray-400 rounded-lg bg-white shadow-sm"
           >
             <div className="flex items-center justify-between">

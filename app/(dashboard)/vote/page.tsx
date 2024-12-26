@@ -42,7 +42,7 @@ const Vote = () => {
       </div>
       <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap gap-4">
         {votes.map((vote) => (
-          <Votes vote={vote} />
+          <Votes vote={vote} key={vote.name}/>
         ))}
       </div>
     </div>
