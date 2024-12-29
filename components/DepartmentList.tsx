@@ -42,14 +42,12 @@ const DepartmentList = ({
   const handleNewDepartmentWithHierarchy = async (
     newDepartment: Department
   ) => {
-    console.log("Selected Parent ID:", selectedParentId); 
     const departmentWithHierarchy = {
       ...newDepartment,
       parentId: selectedParentId,
       organizationId: organizationId,
     };
 
-    console.log("Department with hierarchy:", departmentWithHierarchy); 
     await handleNewDepartment(departmentWithHierarchy);
     if (selectedParentId) {
       setExpanded((prev) => ({
@@ -63,6 +61,10 @@ const DepartmentList = ({
   const currentLevelDepartments = departments.filter(
     (dep) => dep.parentId === parentId
   );
+
+  const hasChildDepartments = (departmentId: string) => {
+    return departments.some((dep) => dep.parentId === departmentId);
+  };
 
   if (currentLevelDepartments.length === 0) {
     return null;
@@ -86,18 +88,20 @@ const DepartmentList = ({
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleExpand(department.id)}
-                  className="w-6 h-6 flex items-center justify-center text-xs hover:bg-gray-100 rounded"
-                >
-                  {expanded[department.id] ? "▼" : "▶"}
-                </button>
+                {hasChildDepartments(department.id) ? (
+                  <button
+                    onClick={() => handleExpand(department.id)}
+                    className="w-6 h-6 flex items-center justify-center text-xs hover:bg-gray-100 rounded"
+                  >
+                    {expanded[department.id] ? "▼" : "▶"}
+                  </button>
+                ) : (
+                  <div className="w-6 h-6" /> // Empty spacer for alignment
+                )}
                 <h3 className="font-medium text-gray-800">{department.name}</h3>
               </div>
               <div className="space-x-3">
-                <Button className="bg-green-600">
-                  Create a vote
-                </Button>
+                <Button className="bg-green-600">Create a vote</Button>
                 <Button
                   className="bg-blue-500"
                   onClick={() => handleDepartment(department.id)}
@@ -113,23 +117,25 @@ const DepartmentList = ({
               </div>
             </div>
           </div>
-          <div
-            className={`overflow-hidden transition-all duration-300 ${
-              expanded[department.id]
-                ? "max-h-[1000px] opacity-100"
-                : "max-h-0 opacity-0"
-            }`}
-          >
-            {expanded[department.id] && (
-              <DepartmentList
-                departments={departments}
-                handleDeleteDepartment={handleDeleteDepartment}
-                parentId={department.id}
-                level={level + 1}
-                organizationId={organizationId}
-              />
-            )}
-          </div>
+          {hasChildDepartments(department.id) && (
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                expanded[department.id]
+                  ? "max-h-[1000px] opacity-100"
+                  : "max-h-0 opacity-0"
+              }`}
+            >
+              {expanded[department.id] && (
+                <DepartmentList
+                  departments={departments}
+                  handleDeleteDepartment={handleDeleteDepartment}
+                  parentId={department.id}
+                  level={level + 1}
+                  organizationId={organizationId}
+                />
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import axios from "axios";
+import { useState } from "react";
 
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
@@ -25,8 +26,12 @@ import {
 } from "@/components/ui/form";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export const SignUpCard = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   const form = useForm({
     defaultValues: {
       name: "",
@@ -40,12 +45,16 @@ export const SignUpCard = () => {
     email: string;
     password: string;
   }) => {
+    setLoading(true); 
     try {
-      const response = await axios.post("/api/register", values);
+      await axios.post("/api/register", values);
       toast.success("User registered successfully!");
+      router.push('/sign-in')
     } catch (error) {
       toast.error("Something went wrong");
       console.error(error);
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -119,8 +128,12 @@ export const SignUpCard = () => {
                   </FormItem>
                 )}
               />
-              <Button disabled={false} size="lg" className="w-full">
-                Sign up
+              <Button
+                disabled={loading} 
+                size="lg"
+                className="w-full"
+              >
+                {loading ? "Signing up..." : "Sign up"}
               </Button>
             </form>
           </Form>
@@ -133,7 +146,7 @@ export const SignUpCard = () => {
             variant="secondary"
             size="lg"
             className="w-full"
-            disabled={false}
+            disabled={loading}
           >
             <FcGoogle className="mr-2 size-5" />
             Login with Google
@@ -142,7 +155,7 @@ export const SignUpCard = () => {
             variant="secondary"
             size="lg"
             className="w-full"
-            disabled={false}
+            disabled={loading}
           >
             <FaGithub className="mr-2 size-5" />
             Login with Github
