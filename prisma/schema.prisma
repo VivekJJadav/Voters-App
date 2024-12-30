@@ -9,7 +9,7 @@ datasource db {
 
 model Voter {
   id                          String            @id @default(auto()) @map("_id") @db.ObjectId
-  VoterId                     String?           
+  VoterId                     String?
   name                        String
   email                       String            @unique
   password                    String?
@@ -29,7 +29,12 @@ model Vote {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   createdAt      DateTime        @default(now())
+  startTime      DateTime 
+  endTime        DateTime 
+  extendedTime   DateTime? 
   description    String
+  isAnonymous    Boolean         @default(false)
+  voteType       VoteType        @default(MULTIPLE_CHOICE)
   candidates     VoteCandidate[]
   winners        VoteWinner[]
   organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -39,6 +44,12 @@ model Vote {
   results        VoteResult[]
   slogans        Slogan[]
   isActive       Boolean         @default(true)
+}
+
+enum VoteType {
+  YES_NO
+  MULTIPLE_CHOICE
+  RANKED_CHOICE
 }
 
 model VoteCandidate {

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 import Department from "./Department";
+import AddMembersDialog from "@/components/AddMemberDialog";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -47,12 +48,15 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   return (
     <div className="flex flex-col space-y-4 p-4">
       <div className="flex items-center justify-between">
-        <NewDepartmentDialog
-          label="Create a new department"
-          organizationId={currentOrg.id}
-          onSuccess={handleNewDepartment}
-          departments={departments}
-        />
+        <div className="space-x-3 flex">
+          <AddMembersDialog organizationId={orgId}/>
+          <NewDepartmentDialog
+            label="Create a new department"
+            organizationId={currentOrg.id}
+            onSuccess={handleNewDepartment}
+            departments={departments}
+          />
+        </div>
         <div className="flex-1 text-center text-lg font-medium text-gray-700">
           {currentOrg.name}
         </div>

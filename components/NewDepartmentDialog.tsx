@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { Department } from "@prisma/client";
 import SelectDepartmentForm from "./SelectDepartmentForm";
 import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 
 interface NewDepartmentDialogProps {
   label: string;
@@ -127,7 +128,9 @@ const NewDepartmentDialog = ({
           ref={triggerRef}
           className={cn(
             "text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base",
-            label === "Create a new department" ? "block sm:block" : "hidden"
+            label === "Create a new department"
+              ? "inline-flex items-center justify-center"
+              : "hidden"
           )}
         >
           {label}
