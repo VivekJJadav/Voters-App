@@ -2,11 +2,10 @@
 
 import axios from "axios";
 import { useState } from "react";
-
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-
+import { useSearchParams, useRouter } from "next/navigation";
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,16 +25,16 @@ import {
 } from "@/components/ui/form";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 export const SignUpCard = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
 
   const form = useForm({
     defaultValues: {
-      name: "",
-      email: "",
+      name: searchParams.get("name") || "",
+      email: searchParams.get("email") || "",
       password: "",
     },
   });
@@ -45,18 +44,24 @@ export const SignUpCard = () => {
     email: string;
     password: string;
   }) => {
-    setLoading(true); 
+    setLoading(true);
     try {
       await axios.post("/api/register", values);
+
       toast.success("User registered successfully!");
-      router.push('/sign-in')
-    } catch (error) {
+      router.push("/sign-in");
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        router.push(`/sign-in?email=${encodeURIComponent(values.email)}`);
+        return;
+      }
       toast.error("Something went wrong");
-      console.error(error);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
+
+  const isEmailFromLink = searchParams.has("email");
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -90,6 +95,8 @@ export const SignUpCard = () => {
                         {...field}
                         type="text"
                         placeholder="Enter your name"
+                        disabled={isEmailFromLink}
+                        className={isEmailFromLink ? "bg-gray-100" : ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -106,6 +113,8 @@ export const SignUpCard = () => {
                         {...field}
                         type="email"
                         placeholder="Enter email address"
+                        disabled={isEmailFromLink}
+                        className={isEmailFromLink ? "bg-gray-100" : ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -128,11 +137,7 @@ export const SignUpCard = () => {
                   </FormItem>
                 )}
               />
-              <Button
-                disabled={loading} 
-                size="lg"
-                className="w-full"
-              >
+              <Button disabled={loading} size="lg" className="w-full">
                 {loading ? "Signing up..." : "Sign up"}
               </Button>
             </form>
