@@ -3,6 +3,7 @@ import "./globals.css";
 
 import AuthProvider from "./features/(auth)/providers/authProvider";
 import { SelectedOrganizationProvider } from "@/context/SelectedOrganizationContext";
+import BravoScript from "./scripts/BravoScript";
 
 export const metadata: Metadata = {
   title: "The Voters",
@@ -16,6 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* <BravoScript /> */}
       <body>
         <AuthProvider>
           <SelectedOrganizationProvider>

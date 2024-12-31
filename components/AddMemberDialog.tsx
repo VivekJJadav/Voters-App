@@ -80,6 +80,13 @@ export default function AddMembersDialog({
     department: "",
   });
 
+  // Check if email already exists in current members list
+  const isEmailDuplicate = (email: string): boolean => {
+    return members.some(
+      (member) => member.email.toLowerCase() === email.toLowerCase()
+    );
+  };
+
   const validateMember = async (
     member: Omit<Member, "isValid" | "error">
   ): Promise<Member> => {
@@ -92,25 +99,34 @@ export default function AddMembersDialog({
         throw new Error("Invalid email format");
       }
 
-      const response = await axios.post("/api/voters/validate-email", {
-        email: member.email,
-      });
-
-      if (response.data?.message === "Email already exists") {
+      // Check for duplicates in current members list
+      if (isEmailDuplicate(member.email)) {
         return {
           ...member,
           isValid: false,
-          error: "Email already exists in the system",
+          error: "Email already exists in the current list",
         };
       }
 
-      if (!response.data?.isValid) {
-        return {
-          ...member,
-          isValid: false,
-          error: response.data?.message || "Failed to validate email",
-        };
-      }
+      // const response = await axios.post("/api/voters/validate-email", {
+      //   email: member.email,
+      // });
+
+      // if (response.data?.message === "Email already exists") {
+      //   return {
+      //     ...member,
+      //     isValid: false,
+      //     error: "Email already exists in the system",
+      //   };
+      // }
+
+      // if (!response.data?.isValid) {
+      //   return {
+      //     ...member,
+      //     isValid: false,
+      //     error: response.data?.message || "Failed to validate email",
+      //   };
+      // }
 
       return { ...member, isValid: true };
     } catch (err) {
@@ -162,8 +178,21 @@ export default function AddMembersDialog({
         return;
       }
 
+      // Filter out duplicates from the CSV before validation
+      const uniqueData = parsedData.filter(
+        (row) => !isEmailDuplicate(row.email)
+      );
+
+      if (uniqueData.length < parsedData.length) {
+        setError(
+          `${
+            parsedData.length - uniqueData.length
+          } duplicate email(s) were skipped`
+        );
+      }
+
       const parsedMembers = await Promise.all(
-        parsedData.map((row) =>
+        uniqueData.map((row) =>
           validateMember({
             email: row.email,
             name: row.name,
@@ -187,6 +216,11 @@ export default function AddMembersDialog({
   const handleManualSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (isEmailDuplicate(manualEntry.email)) {
+      setError("This email already exists in the current list");
+      return;
+    }
 
     const validatedMember = await validateMember(manualEntry);
 
@@ -241,7 +275,6 @@ export default function AddMembersDialog({
     setMembers(members.filter((m) => m.email !== email));
   };
 
-  // Rest of the component remains the same...
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
