@@ -51,7 +51,6 @@ function parseCSV(csvText: string): Array<{ [key: string]: string }> {
     }
 
     if (obj.email && obj.name) {
-      // Only include rows with required fields
       result.push(obj);
     }
   }
@@ -80,7 +79,6 @@ export default function AddMembersDialog({
     department: "",
   });
 
-  // Check if email already exists in current members list
   const isEmailDuplicate = (email: string): boolean => {
     return members.some(
       (member) => member.email.toLowerCase() === email.toLowerCase()
@@ -99,7 +97,6 @@ export default function AddMembersDialog({
         throw new Error("Invalid email format");
       }
 
-      // Check for duplicates in current members list
       if (isEmailDuplicate(member.email)) {
         return {
           ...member,
@@ -178,7 +175,6 @@ export default function AddMembersDialog({
         return;
       }
 
-      // Filter out duplicates from the CSV before validation
       const uniqueData = parsedData.filter(
         (row) => !isEmailDuplicate(row.email)
       );
@@ -208,7 +204,6 @@ export default function AddMembersDialog({
       );
     } finally {
       setIsProcessing(false);
-      // Reset the input
       event.target.value = "";
     }
   };
@@ -236,6 +231,8 @@ export default function AddMembersDialog({
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
+      setError("");
+
       const validMembers = members.filter((m) => m.isValid);
 
       if (validMembers.length === 0) {
@@ -243,29 +240,42 @@ export default function AddMembersDialog({
         return;
       }
 
-      await fetch("/api/voters/batch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          voters: validMembers.map((member) => ({
-            email: member.email,
-            name: member.name,
-            departmentId: member.department,
-            isCandidate: false,
-            VoteParticipationCount: 0,
-            CandidateParticipationCount: 0,
-          })),
-          organizationId,
-        }),
+      const response = await axios.post("/api/voters/send-invitation", {
+        emails: validMembers.map((member) => member.email),
+        names: validMembers.map((member) => member.name),
+        organizationId,
       });
 
-      setOpen(false);
-      setMembers([]);
-      router.refresh();
+      if (response.data.partialSuccess) {
+        setError(
+          `${response.data.failedCount} invitation${
+            response.data.failedCount! > 1 ? "s" : ""
+          } failed to send. Successfully sent ${
+            validMembers.length - response.data.failedCount!
+          } invitation${
+            validMembers.length - response.data.failedCount! > 1 ? "s" : ""
+          }.`
+        );
+
+        const successfulEmails = response.data.results
+          .filter((r: any) => r.success)
+          .map((r: any) => r.email);
+
+        setMembers((prev) =>
+          prev.filter((m) => !successfulEmails.includes(m.email))
+        );
+      } else {
+        setOpen(false);
+        setMembers([]);
+        router.refresh();
+      }
     } catch (err) {
-      setError("Failed to add members");
+      console.error("Error:", err);
+      if (axios.isAxiosError(err) && err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError("Failed to send invitations. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

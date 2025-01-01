@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import * as jose from 'jose';
+import * as jose from "jose";
 import client from "@/app/libs/prismadb";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_super_secret_key";
@@ -9,10 +9,17 @@ const TOKEN_EXPIRATION = "1h";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, organizationId } = body;
 
     const user = await client.voter.findUnique({
       where: { email },
+      include: {
+        organizations: {
+          select: {
+            organizationId: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -35,11 +42,35 @@ export async function POST(request: Request) {
       );
     }
 
-    const token = await new jose.SignJWT({ 
-      id: user.id, 
-      email: user.email 
+    if (organizationId) {
+      const isAlreadyAssociated = user.organizations.some(
+        (org) => org.organizationId === organizationId
+      );
+
+      if (!isAlreadyAssociated) {
+        await client.voter.update({
+          where: { id: user.id },
+          data: {
+            organizations: {
+              create: {
+                organization: {
+                  connect: {
+                    id: organizationId,
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+    }
+
+    const token = await new jose.SignJWT({
+      id: user.id,
+      email: user.email,
+      organizationId: organizationId || null, 
     })
-      .setProtectedHeader({ alg: 'HS256' })
+      .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime(TOKEN_EXPIRATION)
       .sign(new TextEncoder().encode(JWT_SECRET));
 

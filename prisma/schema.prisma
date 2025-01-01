@@ -8,30 +8,30 @@ datasource db {
 }
 
 model Voter {
-  id                          String            @id @default(auto()) @map("_id") @db.ObjectId
+  id                          String              @id @default(auto()) @map("_id") @db.ObjectId
   VoterId                     String?
   name                        String
-  email                       String            @unique
-  password                    String?
+  email                       String              @unique
   hashedPassword              String?
-  isCandidate                 Boolean?          @default(false)
-  VoteParticipationCount      Int?              @default(0)
-  CandidateParticipationCount Int?              @default(0)
+  isCandidate                 Boolean?            @default(false)
+  VoteParticipationCount      Int?                @default(0)
+  CandidateParticipationCount Int?                @default(0)
   candidates                  VoteCandidate[]
   winnings                    VoteWinner[]
   slogans                     Slogan[]
   departments                 VoterDepartment[]
   createdOrganizations        Organization[]
   voteResults                 VoteResult[]
+  organizations               VoterOrganization[] 
 }
 
 model Vote {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
   name           String
   createdAt      DateTime        @default(now())
-  startTime      DateTime 
-  endTime        DateTime 
-  extendedTime   DateTime? 
+  startTime      DateTime
+  endTime        DateTime
+  extendedTime   DateTime?
   description    String
   isAnonymous    Boolean         @default(false)
   voteType       VoteType        @default(MULTIPLE_CHOICE)
@@ -90,12 +90,13 @@ model Slogan {
 }
 
 model Organization {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
   name        String
-  creator     Voter        @relation(fields: [creatorId], references: [id])
-  creatorId   String       @db.ObjectId
+  creator     Voter               @relation(fields: [creatorId], references: [id])
+  creatorId   String              @db.ObjectId
   votes       Vote[]
   departments Department[]
+  voters      VoterOrganization[] 
 }
 
 model Department {
@@ -118,4 +119,14 @@ model VoterDepartment {
   departmentId String     @db.ObjectId
 
   @@unique([voterId, departmentId])
+}
+
+model VoterOrganization {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  voter          Voter        @relation(fields: [voterId], references: [id], onDelete: Restrict)
+  voterId        String       @db.ObjectId
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  organizationId String       @db.ObjectId
+
+  @@unique([voterId, organizationId]) 
 }

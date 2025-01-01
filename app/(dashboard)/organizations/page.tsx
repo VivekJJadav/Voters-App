@@ -45,7 +45,7 @@ const Organization = () => {
           ) : (
             <ul className="space-y-2">
               {organizations.map((org) => (
-                <OrganizationTag org={org} />
+                <OrganizationTag org={org} key={org.id} />
               ))}
             </ul>
           )}

@@ -35,6 +35,7 @@ export const SignUpCard = () => {
     defaultValues: {
       name: searchParams.get("name") || "",
       email: searchParams.get("email") || "",
+      organizationId: searchParams.get("organizationId") || "",
       password: "",
     },
   });
@@ -43,6 +44,7 @@ export const SignUpCard = () => {
     name: string;
     email: string;
     password: string;
+    organizationId?: string;
   }) => {
     setLoading(true);
     try {

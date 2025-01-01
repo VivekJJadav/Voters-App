@@ -5,7 +5,7 @@ import client from "@/app/libs/prismadb";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, password } = body;
+    const { name, email, password, organizationId } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -23,7 +23,6 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const voterId = `VOTER-${Date.now()}`;
 
     const newUser = await client.voter.create({
@@ -32,6 +31,18 @@ export async function POST(req: Request) {
         email,
         hashedPassword,
         VoterId: voterId,
+        organizations: {
+          create: {
+            organization: {
+              connect: {
+                id: organizationId,
+              },
+            },
+          },
+        },
+      },
+      include: {
+        organizations: true,
       },
     });
 
