@@ -112,7 +112,7 @@ export const SignInCard = () => {
                 size="lg"
                 className="w-full"
               >
-                {isLoading ? "Signing in..." : "Login"}
+                {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
           </Form>
