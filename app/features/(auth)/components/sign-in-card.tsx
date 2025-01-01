@@ -18,14 +18,17 @@ import {
 } from "@/components/ui/form";
 import Link from "next/link";
 import axios from "axios";
+import { useSearchParams } from "next/navigation";
 
 export const SignInCard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
 
+  const searchParams = useSearchParams();
+
   const form = useForm({
     defaultValues: {
-      email: "",
+      email: searchParams.get("email") || "",
       password: "",
     },
   });
@@ -53,6 +56,8 @@ export const SignInCard = () => {
     }
   };
 
+  const isEmailFromLink = searchParams.has("email");
+
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full h-full md:w-[487px] border-none shadow-none">
@@ -76,6 +81,8 @@ export const SignInCard = () => {
                         type="email"
                         placeholder="Enter email address"
                         required
+                        disabled={isEmailFromLink}
+                        className={isEmailFromLink ? "bg-gray-100" : ""}
                       />
                     </FormControl>
                     <FormMessage />
