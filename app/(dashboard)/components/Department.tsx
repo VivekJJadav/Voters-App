@@ -7,7 +7,7 @@ interface DepartmentProps {
   organizationId: string;
 }
 
-const Department = ({
+const DepartmentTag = ({
   departments,
   handleDeleteDepartment,
   organizationId,
@@ -23,4 +23,4 @@ const Department = ({
   );
 };
 
-export default Department;
+export default DepartmentTag;

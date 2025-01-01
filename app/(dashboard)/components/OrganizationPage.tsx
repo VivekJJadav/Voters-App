@@ -4,8 +4,8 @@ import NewDepartmentDialog from "@/components/NewDepartmentDialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
-import Department from "./Department";
 import AddMembersDialog from "@/components/AddMemberDialog";
+import DepartmentTag from "./Department";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -82,7 +82,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         {!loading ? (
           <div className="space-y-2">
             {departments.length !== 0 ? (
-              <Department
+              <DepartmentTag
                 departments={departments}
                 handleDeleteDepartment={handleDeleteDepartment}
                 organizationId={currentOrg.id}
