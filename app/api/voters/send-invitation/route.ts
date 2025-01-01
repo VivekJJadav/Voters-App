@@ -87,7 +87,6 @@ export async function POST(request: Request) {
 
         await mailersend.email.send(emailData);
         results.push({ email, success: true });
-        toast.success('Invitation sent successfully');
       } catch (error) {
         console.error(`Failed to send email to ${emails[i]}:`, error);
         results.push({
