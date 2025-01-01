@@ -31,15 +31,13 @@ export async function POST(req: Request) {
         email,
         hashedPassword,
         VoterId: voterId,
-        organizations: {
-          create: {
-            organization: {
-              connect: {
-                id: organizationId,
+        organizations: organizationId
+          ? {
+              create: {
+                organizationId,
               },
-            },
-          },
-        },
+            }
+          : undefined,
       },
       include: {
         organizations: true,

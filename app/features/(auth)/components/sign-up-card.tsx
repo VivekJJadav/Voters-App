@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useSearchParams, useRouter } from "next/navigation";
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
+import { signIn } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -49,9 +50,18 @@ export const SignUpCard = () => {
     setLoading(true);
     try {
       await axios.post("/api/register", values);
+      const response = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false,
+      });
 
-      toast.success("User registered successfully!");
-      router.push("/sign-in");
+      if (response?.ok) {
+        router.push("/dashboard");
+        toast.success("Welcome!");
+      } else {
+        toast.error("Failed to sign in");
+      }
     } catch (error: any) {
       if (error.response?.status === 409) {
         router.push(`/sign-in?email=${encodeURIComponent(values.email)}`);
