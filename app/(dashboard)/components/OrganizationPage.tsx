@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import AddMembersDialog from "@/components/AddMemberDialog";
 import DepartmentTag from "./Department";
+import useGetVoters from "@/app/actions/useGetVoters";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -16,6 +17,10 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   const { organizations, handleDeleteOrganization } = useGetOrganizations();
   const { departments, handleNewDepartment, handleDeleteDepartment, loading } =
     useGetDepartments(orgId);
+
+  const { voters } = useGetVoters(orgId);
+
+  console.log(voters)
 
   const currentOrg = organizations.find((org) => org.id === orgId);
 
@@ -49,7 +54,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
     <div className="flex flex-col space-y-4 p-4">
       <div className="flex items-center justify-between">
         <div className="space-x-3 flex">
-          <AddMembersDialog organizationId={orgId}/>
+          <AddMembersDialog organizationId={orgId} />
           <NewDepartmentDialog
             label="Create a new department"
             organizationId={currentOrg.id}
@@ -79,6 +84,18 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
       </div>
       <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded-lg">
         <h2 className="text-lg font-semibold mb-4">Departments</h2>
+
+        {voters.map((voter) => (
+          <div key={voter.id}>
+            <p>{voter.email}</p>
+            {voter.organizations.map((org) => {
+              const orgData = organizations.find(
+                (o) => o.id === org.organizationId
+              );
+              return <p key={org.id}>{orgData?.name || "Loading..."}</p>;
+            })}
+          </div>
+        ))}
         {!loading ? (
           <div className="space-y-2">
             {departments.length !== 0 ? (

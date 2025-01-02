@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
-
-interface Organization {
-  id: string;
-  name: string;
-  creatorId: string;
-}
+import { Organization } from "@prisma/client";
 
 type Listener = () => void;
 

@@ -96,7 +96,7 @@ const DepartmentList = ({
                     {expanded[department.id] ? "▼" : "▶"}
                   </button>
                 ) : (
-                  <div className="w-6 h-6" /> // Empty spacer for alignment
+                  <div className="w-6 h-6" /> 
                 )}
                 <h3 className="font-medium text-gray-800">{department.name}</h3>
               </div>

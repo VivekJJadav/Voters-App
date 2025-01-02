@@ -15,8 +15,8 @@ export async function POST(request: Request) {
       where: { email },
       include: {
         organizations: {
-          select: {
-            organizationId: true,
+          include: {
+            organization: true,
           },
         },
       },
@@ -42,40 +42,39 @@ export async function POST(request: Request) {
       );
     }
 
-    if (organizationId) {
-      const isAlreadyAssociated = user.organizations.some(
-        (org) => org.organizationId === organizationId
-      );
-
-      if (!isAlreadyAssociated) {
-        await client.voter.update({
-          where: { id: user.id },
-          data: {
-            organizations: {
-              create: {
-                organization: {
-                  connect: {
-                    id: organizationId,
-                  },
-                },
-              },
-            },
+    if (
+      organizationId &&
+      !user.organizations.some((org) => org.organizationId === organizationId)
+    ) {
+      await client.voterOrganization.create({
+        data: {
+          voter: {
+            connect: { id: user.id },
           },
-        });
-      }
+          organization: {
+            connect: { id: organizationId },
+          },
+        },
+      });
     }
 
     const token = await new jose.SignJWT({
       id: user.id,
       email: user.email,
-      organizationId: organizationId || null, 
+      organizationId: organizationId || null,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime(TOKEN_EXPIRATION)
       .sign(new TextEncoder().encode(JWT_SECRET));
 
     const response = NextResponse.json(
-      { message: "Login successful", user },
+      {
+        message: "Login successful",
+        user: {
+          ...user,
+          organizations: user.organizations, 
+        },
+      },
       { status: 200 }
     );
 

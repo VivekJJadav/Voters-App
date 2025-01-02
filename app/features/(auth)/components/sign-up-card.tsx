@@ -8,7 +8,6 @@ import { useForm } from "react-hook-form";
 import { useSearchParams, useRouter } from "next/navigation";
 import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
-import { signIn } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -49,25 +48,22 @@ export const SignUpCard = () => {
   }) => {
     setLoading(true);
     try {
-      await axios.post("/api/register", values);
-      const response = await signIn("credentials", {
-        email: values.email,
-        password: values.password,
-        redirect: false,
-      });
+      const response = await axios.post("/api/register", values);
 
-      if (response?.ok) {
-        router.push("/dashboard");
-        toast.success("Welcome!");
-      } else {
-        toast.error("Failed to sign in");
+      if (response.status === 201) {
+        router.push(`/sign-in?email=${encodeURIComponent(values.email)}`);
+        toast.success("Registration successful! Please sign in.");
       }
     } catch (error: any) {
+      console.error("Registration error:", error);
+
       if (error.response?.status === 409) {
         router.push(`/sign-in?email=${encodeURIComponent(values.email)}`);
+        toast.error("Email already exists. Please sign in.");
         return;
       }
-      toast.error("Something went wrong");
+
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

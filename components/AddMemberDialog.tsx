@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import useGetDepartments from "@/app/actions/useGetDepartments";
 import axios from "axios";
+import { toast } from "sonner";
 
 interface Member {
   email: string;
@@ -32,7 +33,7 @@ interface Member {
   error?: string;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_ENTRIES = 500;
 
 function parseCSV(csvText: string): Array<{ [key: string]: string }> {
@@ -41,7 +42,7 @@ function parseCSV(csvText: string): Array<{ [key: string]: string }> {
   const result = [];
 
   for (let i = 1; i < lines.length; i++) {
-    if (!lines[i].trim()) continue; // Skip empty lines
+    if (!lines[i].trim()) continue;
 
     const currentLine = lines[i].split(",").map((field) => field.trim());
     const obj: { [key: string]: string } = {};

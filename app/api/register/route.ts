@@ -34,7 +34,11 @@ export async function POST(req: Request) {
         organizations: organizationId
           ? {
               create: {
-                organizationId,
+                organization: {
+                  connect: {
+                    id: organizationId,
+                  },
+                },
               },
             }
           : undefined,
