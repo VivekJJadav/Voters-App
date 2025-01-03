@@ -74,12 +74,10 @@ export async function DELETE(request: Request) {
         },
       });
 
-      await prisma.voterOrganization.delete({
+      await prisma.voterOrganization.deleteMany({
         where: {
-          voterId_organizationId: {
-            voterId: id,
-            organizationId,
-          },
+          voterId: id,
+          organizationId,
         },
       });
     });
