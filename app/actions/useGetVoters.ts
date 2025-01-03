@@ -17,7 +17,7 @@ type VoterWithRelations = Voter & {
   organizations: VoterOrganization[];
 };
 
-const voterStore = {
+export const voterStore = {
   listeners: new Set<Listener>(),
   voters: [] as VoterWithRelations[],
 
@@ -71,8 +71,15 @@ const useGetVoters = (organizationId: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const initialized = useRef(false);
+  const prevOrgId = useRef(organizationId);
 
   useEffect(() => {
+    // Reset initialization when organization changes
+    if (prevOrgId.current !== organizationId) {
+      initialized.current = false;
+      prevOrgId.current = organizationId;
+    }
+
     const fetchVoters = async () => {
       if (!user?.id || !organizationId) {
         setLoading(false);
@@ -114,8 +121,18 @@ const useGetVoters = (organizationId: string) => {
       });
     });
 
+    // Subscribe to auth store changes
+    const unsubscribeAuth = useAuthStore.subscribe((state) => {
+      if (state.user && initialized.current) {
+        // Force refresh when user data changes
+        initialized.current = false;
+        fetchVoters();
+      }
+    });
+
     return () => {
       unsubscribe();
+      unsubscribeAuth();
       initialized.current = false;
     };
   }, [user?.id, organizationId]);

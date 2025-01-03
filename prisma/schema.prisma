@@ -127,6 +127,4 @@ model VoterOrganization {
   voterId        String       @db.ObjectId
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   organizationId String       @db.ObjectId
-
-  @@unique([voterId, organizationId]) 
 }

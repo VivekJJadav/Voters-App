@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
+import { voterStore } from "@/app/actions/useGetVoters";
 
 export const SignInCard = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +38,8 @@ export const SignInCard = () => {
     setIsLoading(true);
     try {
       const response = await axios.post("/api/login", values);
+
+      voterStore.setVoters([]);
 
       setUser(response.data.user, response.data.token);
 
@@ -120,7 +123,7 @@ export const SignInCard = () => {
         <div className="px-7">
           <DottedSeparator />
         </div>
-        <CardContent className="p-7 flex flex-col gap-y-4">
+        {/* <CardContent className="p-7 flex flex-col gap-y-4">
           <Button
             variant="secondary"
             size="lg"
@@ -142,7 +145,7 @@ export const SignInCard = () => {
         </CardContent>
         <div className="px-7">
           <DottedSeparator />
-        </div>
+        </div> */}
         <CardContent className="p-7 flex items-center justify-center">
           <p>
             Don&apos;t have an account?

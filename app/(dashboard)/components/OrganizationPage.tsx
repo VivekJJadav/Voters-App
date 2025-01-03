@@ -20,8 +20,6 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   const { voters } = useGetVoters(orgId);
 
-  console.log(voters)
-
   const currentOrg = organizations.find((org) => org.id === orgId);
 
   if (!currentOrg) {
@@ -51,24 +49,26 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   };
 
   return (
-    <div className="flex flex-col space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <div className="space-x-3 flex">
+    <div className="flex flex-col space-y-4 p-2 sm:p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+        <div className="flex flex-wrap gap-2">
           <AddMembersDialog organizationId={orgId} />
           <NewDepartmentDialog
-            label="Create a new department"
+            label="New department"
             organizationId={currentOrg.id}
             onSuccess={handleNewDepartment}
             departments={departments}
           />
         </div>
-        <div className="flex-1 text-center text-lg font-medium text-gray-700">
+
+        <div className="text-center text-base sm:text-lg font-medium text-gray-700 my-2 sm:my-0">
           {currentOrg.name}
         </div>
-        <div className="ml-auto space-x-2">
+
+        <div className="flex space-x-2">
           <Button
             variant="outline"
-            className="text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base"
+            className="text-xs sm:text-sm flex-1 sm:flex-none"
           >
             Edit
           </Button>
@@ -76,26 +76,61 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             variant="destructive"
             onClick={() => onDelete(currentOrg.id)}
             disabled={isLoading}
-            className="text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base"
+            className="text-xs sm:text-sm flex-1 sm:flex-none"
           >
             {isLoading ? "Deleting..." : "Delete"}
           </Button>
         </div>
       </div>
-      <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded-lg">
-        <h2 className="text-lg font-semibold mb-4">Departments</h2>
 
-        {voters.map((voter) => (
-          <div key={voter.id}>
-            <p>{voter.email}</p>
-            {voter.organizations.map((org) => {
-              const orgData = organizations.find(
-                (o) => o.id === org.organizationId
-              );
-              return <p key={org.id}>{orgData?.name || "Loading..."}</p>;
-            })}
-          </div>
-        ))}
+      <div className="mt-2 sm:mt-4 p-3 sm:p-4 bg-gray-100 border border-gray-300 rounded-lg">
+        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+          Departments
+        </h2>
+
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+            Members
+          </h2>
+          {voters.length === 0 ? (
+            <p className="text-sm sm:text-base text-gray-500">
+              No members in this organization yet.
+            </p>
+          ) : (
+            <div className="grid gap-2 sm:gap-3">
+              {voters.map((voter) => (
+                <div
+                  key={voter.id}
+                  className="p-2 sm:p-3 bg-white rounded-lg border border-gray-200 shadow-sm"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm sm:text-base font-medium">
+                        {voter.name}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-600">
+                        {voter.email}
+                      </p>
+                    </div>
+                    {voter.departments.length > 0 && (
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
+                        {voter.departments.map((dept) => (
+                          <span
+                            key={dept.id}
+                            className="px-2 py-0.5 text-xs bg-gray-100 rounded-full"
+                          >
+                            {dept.department.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {!loading ? (
           <div className="space-y-2">
             {departments.length !== 0 ? (
@@ -105,14 +140,14 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                 organizationId={currentOrg.id}
               />
             ) : (
-              <p>
+              <p className="text-sm sm:text-base">
                 No departments are available. Please create one to conduct
                 voting.
               </p>
             )}
           </div>
         ) : (
-          <p>Loading departments...</p>
+          <p className="text-sm sm:text-base">Loading departments...</p>
         )}
       </div>
     </div>

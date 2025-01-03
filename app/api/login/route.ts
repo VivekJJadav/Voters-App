@@ -42,25 +42,66 @@ export async function POST(request: Request) {
       );
     }
 
-    if (
-      organizationId &&
-      !user.organizations.some((org) => org.organizationId === organizationId)
-    ) {
-      await client.voterOrganization.create({
-        data: {
-          voter: {
-            connect: { id: user.id },
-          },
-          organization: {
-            connect: { id: organizationId },
-          },
+    // if (
+    //   organizationId &&
+    //   !user.organizations.some((org) => org.organizationId === organizationId)
+    // ) {
+    //   await client.voterOrganization.create({
+    //     data: {
+    //       voter: {
+    //         connect: { id: user.id },
+    //       },
+    //       organization: {
+    //         connect: { id: organizationId },
+    //       },
+    //     },
+    //   });
+    // }
+
+    if (organizationId) {
+      const existingRelation = await client.voterOrganization.findFirst({
+        where: {
+          voterId: user.id,
+          organizationId: organizationId,
         },
       });
+
+      if (!existingRelation) {
+        await client.voterOrganization.create({
+          data: {
+            voter: {
+              connect: { id: user.id },
+            },
+            organization: {
+              connect: { id: organizationId },
+            },
+          },
+        });
+      }
+    }
+
+    // Always fetch fresh user data before responding
+    const updatedUser = await client.voter.findUnique({
+      where: { id: user.id },
+      include: {
+        organizations: {
+          include: {
+            organization: true,
+          },
+        },
+      },
+    });
+
+    if (!updatedUser) {
+      return NextResponse.json(
+        { error: "Failed to fetch updated user data" },
+        { status: 500 }
+      );
     }
 
     const token = await new jose.SignJWT({
-      id: user.id,
-      email: user.email,
+      id: updatedUser.id,
+      email: updatedUser.email,
       organizationId: organizationId || null,
     })
       .setProtectedHeader({ alg: "HS256" })
@@ -70,10 +111,7 @@ export async function POST(request: Request) {
     const response = NextResponse.json(
       {
         message: "Login successful",
-        user: {
-          ...user,
-          organizations: user.organizations, 
-        },
+        user: updatedUser, // Using the fresh data
       },
       { status: 200 }
     );

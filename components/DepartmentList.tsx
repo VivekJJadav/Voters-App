@@ -83,10 +83,10 @@ const DepartmentList = ({
       {currentLevelDepartments.map((department) => (
         <div key={department.id}>
           <div
-            style={{ marginLeft: `${level * 2}rem` }}
-            className="p-4 border-[1px] border-gray-400 rounded-lg bg-white shadow-sm"
+            style={{ marginLeft: `${level * 1}rem` }}
+            className="p-2 sm:p-4 border-[1px] border-gray-400 rounded-lg bg-white shadow-sm"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {hasChildDepartments(department.id) ? (
                   <button
@@ -96,20 +96,24 @@ const DepartmentList = ({
                     {expanded[department.id] ? "▼" : "▶"}
                   </button>
                 ) : (
-                  <div className="w-6 h-6" /> 
+                  <div className="w-6 h-6" />
                 )}
-                <h3 className="font-medium text-gray-800">{department.name}</h3>
+                <h3 className="font-medium text-gray-800 text-sm sm:text-base">
+                  {department.name}
+                </h3>
               </div>
-              <div className="space-x-3">
-                <Button className="bg-green-600">Create a vote</Button>
+              <div className="flex flex-wrap gap-2">
+                <Button className="bg-green-600 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2">
+                  Create a vote
+                </Button>
                 <Button
-                  className="bg-blue-500"
+                  className="bg-blue-500 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
                   onClick={() => handleDepartment(department.id)}
                 >
                   <PlusIcon size={16} />
                 </Button>
                 <Button
-                  className="bg-red-500"
+                  className="bg-red-500 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
                   onClick={() => handleDeleteDepartment(department.id)}
                 >
                   Delete

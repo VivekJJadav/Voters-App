@@ -154,7 +154,7 @@ export const SignUpCard = () => {
         <div className="px-7">
           <DottedSeparator />
         </div>
-        <CardContent className="p-7 flex flex-col gap-y-4">
+        {/* <CardContent className="p-7 flex flex-col gap-y-4">
           <Button
             variant="secondary"
             size="lg"
@@ -176,7 +176,7 @@ export const SignUpCard = () => {
         </CardContent>
         <div className="px-7">
           <DottedSeparator />
-        </div>
+        </div> */}
         <CardContent className="p-7 flex items-center justify-center">
           <p>
             Already have an account?
