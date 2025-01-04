@@ -51,7 +51,7 @@ const SelectorForm = ({ placeholder, values }: SelectorProps) => {
                 }}
               >
                 <FormControl>
-                  <SelectTrigger className="text-black bg-white/50 border-blue-600 rounded-lg">
+                  <SelectTrigger className="text-black bg-white/50 border-blue-600 rounded-lg w-56">
                     <SelectValue
                       placeholder={placeholder || "Select an organization"}
                     />
