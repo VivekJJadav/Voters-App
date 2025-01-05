@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import AuthProvider from "./features/(auth)/providers/authProvider";
 import { SelectedOrganizationProvider } from "@/context/SelectedOrganizationContext";
 
 export const metadata: Metadata = {
@@ -17,11 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>
-          <SelectedOrganizationProvider>
-            {children}
-          </SelectedOrganizationProvider>
-        </AuthProvider>
+        <SelectedOrganizationProvider>{children}</SelectedOrganizationProvider>
       </body>
     </html>
   );

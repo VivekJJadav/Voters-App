@@ -25,6 +25,16 @@ model Voter {
   organizations               VoterOrganization[] 
 }
 
+model Organization {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  creator     Voter               @relation(fields: [creatorId], references: [id])
+  creatorId   String              @db.ObjectId
+  votes       Vote[]
+  departments Department[]
+  voters      VoterOrganization[] 
+}
+
 model Vote {
   id             String          @id @default(auto()) @map("_id") @db.ObjectId
   name           String
@@ -87,16 +97,6 @@ model Slogan {
   vote    Vote   @relation(fields: [voteId], references: [id])
   voterId String @db.ObjectId
   voter   Voter  @relation(fields: [voterId], references: [id])
-}
-
-model Organization {
-  id          String              @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  creator     Voter               @relation(fields: [creatorId], references: [id])
-  creatorId   String              @db.ObjectId
-  votes       Vote[]
-  departments Department[]
-  voters      VoterOrganization[] 
 }
 
 model Department {
