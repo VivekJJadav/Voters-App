@@ -25,9 +25,7 @@ const CandidateSelection = ({ value, onChange }: CandidateSelectionProps) => {
   const [inputValue, setInputValue] = React.useState("");
 
   const { selectedOrgId } = useSelectedOrganization();
-  const { voters = [] } = selectedOrgId
-    ? useGetVoters(selectedOrgId)
-    : { voters: [] };
+  const { voters } = useGetVoters(selectedOrgId || "");
 
   const handleUnselect = React.useCallback(
     (voter: User) => {
