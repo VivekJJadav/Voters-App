@@ -7,124 +7,167 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Voter {
-  id                          String              @id @default(auto()) @map("_id") @db.ObjectId
-  VoterId                     String?
-  name                        String
-  email                       String              @unique
+model User {
+  id                          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name                        String   @db.String()
+  email                       String   @unique
   hashedPassword              String?
-  isCandidate                 Boolean?            @default(false)
-  VoteParticipationCount      Int?                @default(0)
-  CandidateParticipationCount Int?                @default(0)
-  candidates                  VoteCandidate[]
-  winnings                    VoteWinner[]
-  slogans                     Slogan[]
-  departments                 VoterDepartment[]
-  createdOrganizations        Organization[]
-  voteResults                 VoteResult[]
-  organizations               VoterOrganization[] 
+  isCandidate                 Boolean  @default(false)
+  voteParticipationCount      Int      @default(0)
+  candidateParticipationCount Int      @default(0)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  createdOrganizations Organization[]       @relation("CreatedOrganizations")
+  organizations        OrganizationMember[]
+  departments          UserDepartment[]
+  candidates           VoteCandidate[]
+  slogans              Slogan[]
+  voteResults          VoteResult[]
 }
 
 model Organization {
-  id          String              @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  creator     Voter               @relation(fields: [creatorId], references: [id])
-  creatorId   String              @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @db.String()
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator     User                 @relation("CreatedOrganizations", fields: [creatorId], references: [id])
+  creatorId   String               @db.ObjectId
   votes       Vote[]
   departments Department[]
-  voters      VoterOrganization[] 
+  members     OrganizationMember[]
+
+  @@index([creatorId])
+}
+
+model OrganizationMember {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  role      UserRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId         String       @db.ObjectId
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  organizationId String       @db.ObjectId
+
+  @@index([organizationId])
+  @@index([userId])
 }
 
 model Vote {
-  id             String          @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  createdAt      DateTime        @default(now())
-  startTime      DateTime
-  endTime        DateTime
-  extendedTime   DateTime?
-  description    String
-  isAnonymous    Boolean         @default(false)
-  voteType       VoteType        @default(MULTIPLE_CHOICE)
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String    @db.String()
+  description  String    @db.String()
+  startTime    DateTime
+  endTime      DateTime
+  extendedTime DateTime?
+  isAnonymous  Boolean   @default(false)
+  voteType     VoteType  @default(MULTIPLE_CHOICE)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
   candidates     VoteCandidate[]
-  winners        VoteWinner[]
+  results        VoteResult[]
+  slogans        Slogan[]
   organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String          @db.ObjectId
   department     Department?     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   departmentId   String?         @db.ObjectId
-  results        VoteResult[]
-  slogans        Slogan[]
-  isActive       Boolean         @default(true)
+
+  @@index([organizationId])
+  @@index([departmentId])
 }
 
 enum VoteType {
   YES_NO
+  SINGLE_CHOICE
   MULTIPLE_CHOICE
   RANKED_CHOICE
+  PREFERENTIAL
+}
+
+enum UserRole {
+  ADMIN
+  MODERATOR
+  MEMBER
 }
 
 model VoteCandidate {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  voterId String @db.ObjectId
-  voter   Voter  @relation(fields: [voterId], references: [id])
-  voteId  String @db.ObjectId
-  vote    Vote   @relation(fields: [voteId], references: [id])
-}
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
 
-model VoteWinner {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  voterId String @db.ObjectId
-  voter   Voter  @relation(fields: [voterId], references: [id])
-  voteId  String @db.ObjectId
-  vote    Vote   @relation(fields: [voteId], references: [id])
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+  voteId String @db.ObjectId
+  vote   Vote   @relation(fields: [voteId], references: [id])
+
+  @@unique([userId, voteId])
+  @@index([voteId])
+  @@index([userId])
 }
 
 model VoteResult {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt   DateTime @default(now())
-  voteId      String   @db.ObjectId
-  vote        Vote     @relation(fields: [voteId], references: [id])
-  candidateId String   @db.ObjectId
-  candidate   Voter    @relation(fields: [candidateId], references: [id])
-  voteCount   Int      @default(0)
-  isWinner    Boolean  @default(false)
-  statistics  Json?
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  voteCount  Int      @default(0)
+  isWinner   Boolean  @default(false)
+  statistics Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  voteId      String @db.ObjectId
+  vote        Vote   @relation(fields: [voteId], references: [id])
+  candidateId String @db.ObjectId
+  candidate   User   @relation(fields: [candidateId], references: [id])
+
+  @@index([voteId])
+  @@index([candidateId])
 }
 
 model Slogan {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  content String
-  voteId  String @db.ObjectId
-  vote    Vote   @relation(fields: [voteId], references: [id])
-  voterId String @db.ObjectId
-  voter   Voter  @relation(fields: [voterId], references: [id])
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String   @db.String()
+  createdAt DateTime @default(now())
+
+  voteId String @db.ObjectId
+  vote   Vote   @relation(fields: [voteId], references: [id])
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([voteId])
+  @@index([userId])
 }
 
 model Department {
-  id             String            @id @default(auto()) @map("_id") @db.ObjectId
-  name           String
-  parentId       String?           @db.ObjectId
-  parent         Department?       @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children       Department[]      @relation("DepartmentHierarchy")
-  voters         VoterDepartment[]
-  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String            @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   @db.String()
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parentId       String?          @db.ObjectId
+  parent         Department?      @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children       Department[]     @relation("DepartmentHierarchy")
+  members        UserDepartment[]
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String           @db.ObjectId
   votes          Vote[]
+
+  @@index([organizationId])
+  @@index([parentId])
 }
 
-model VoterDepartment {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  voter        Voter      @relation(fields: [voterId], references: [id], onDelete: Restrict)
-  voterId      String     @db.ObjectId
+model UserDepartment {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  joinedAt DateTime @default(now())
+
+  user         User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  userId       String     @db.ObjectId
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   departmentId String     @db.ObjectId
 
-  @@unique([voterId, departmentId])
-}
-
-model VoterOrganization {
-  id             String       @id @default(auto()) @map("_id") @db.ObjectId
-  voter          Voter        @relation(fields: [voterId], references: [id], onDelete: Restrict)
-  voterId        String       @db.ObjectId
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  organizationId String       @db.ObjectId
+  @@unique([userId, departmentId])
+  @@index([departmentId])
+  @@index([userId])
 }

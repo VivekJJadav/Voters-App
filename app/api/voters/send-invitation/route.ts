@@ -7,7 +7,6 @@ interface SendInvitationResult {
 import { NextResponse } from "next/server";
 import { MailerSend, EmailParams } from "mailersend";
 import client from "@/app/libs/prismadb";
-import { toast } from "sonner";
 
 const mailersend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY!,
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
         const email = emails[i];
         const name = names[i];
 
-        const existingUser = await client.voter.findUnique({
+        const existingUser = await client.user.findUnique({
           where: { email },
         });
         const redirectPath = existingUser ? "sign-in" : "sign-up";

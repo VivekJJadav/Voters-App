@@ -12,27 +12,33 @@ export async function GET(request: Request) {
       );
     }
 
-    const voters = await client.voter.findMany({
+    const members = await client.organizationMember.findMany({
       where: {
-        organizations: {
-          some: {
-            organizationId: organizationId,
-          },
-        },
+        organizationId: organizationId,
+        NOT: {
+          role: "ADMIN",
+        }
       },
       include: {
-        organizations: {
-          include: {
-            organization: true,
-          },
-        },
-        departments: {
-          include: {
-            department: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            isCandidate: true,
+            departments: true,
           },
         },
       },
     });
+
+    console.log("Members:", members);
+
+    const voters = members.map((member) => ({
+      ...member.user,
+      role: member.role,
+      departments: [], 
+    }));
 
     return NextResponse.json(voters);
   } catch (error) {
@@ -50,34 +56,29 @@ export async function DELETE(request: Request) {
     const body = await request.json();
     const { id } = body;
 
-    if (!organizationId) {
+    if (!organizationId || !id) {
       return NextResponse.json(
-        { error: "organizationId header is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Voter ID is required." },
+        { error: "Organization ID and User ID are required" },
         { status: 400 }
       );
     }
 
     await client.$transaction(async (prisma) => {
-      await prisma.voterDepartment.deleteMany({
+      // Delete department memberships
+      await prisma.userDepartment.deleteMany({
         where: {
-          voterId: id,
+          userId: id,
           department: {
             organizationId,
           },
         },
       });
 
-      await prisma.voterOrganization.deleteMany({
+      // Delete organization membership
+      await prisma.organizationMember.deleteMany({
         where: {
-          voterId: id,
-          organizationId,
+          userId: id,
+          organizationId: organizationId,
         },
       });
     });
@@ -89,10 +90,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error("Error removing voter:", error);
     return NextResponse.json(
-      {
-        error: "Failed to remove voter.",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Failed to remove voter." },
       { status: 500 }
     );
   }
@@ -119,15 +117,15 @@ export async function PUT(request: Request) {
     }
 
     await client.$transaction(async (prisma) => {
-      await prisma.voter.update({
+      await prisma.user.update({
         where: { id },
         data: voterData,
       });
 
       if (departmentIds) {
-        await prisma.voterDepartment.deleteMany({
+        await prisma.userDepartment.deleteMany({
           where: {
-            voterId: id,
+            userId: id,
             department: {
               organizationId,
             },
@@ -141,13 +139,13 @@ export async function PUT(request: Request) {
           })
         );
 
-        await prisma.voterDepartment.createMany({
+        await prisma.userDepartment.createMany({
           data: departmentConnections,
         });
       }
     });
 
-    const updatedVoter = await client.voter.findUnique({
+    const updatedVoter = await client.user.findUnique({
       where: { id },
       include: {
         departments: {
@@ -157,7 +155,6 @@ export async function PUT(request: Request) {
         },
         organizations: true,
         candidates: true,
-        winnings: true,
         slogans: true,
         voteResults: true,
       },

@@ -1,20 +1,20 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
-import { Voter, VoterDepartment, VoterOrganization } from "@prisma/client";
+import { User, UserDepartment, OrganizationMember } from "@prisma/client";
 import { toast } from "sonner";
 
 type Listener = () => void;
 
-type VoterWithRelations = Voter & {
-  departments: (VoterDepartment & {
+type VoterWithRelations = User & {
+  departments: (UserDepartment & {
     department: {
       id: string;
       name: string;
       organizationId: string;
     };
   })[];
-  organizations: VoterOrganization[];
+  organizations: OrganizationMember[];
 };
 
 export const voterStore = {
@@ -138,7 +138,7 @@ const useGetVoters = (organizationId: string) => {
   }, [user?.id, organizationId]);
 
   const handleAddVoter = async (
-    voterData: Partial<Voter & { departmentIds: string[] }>
+    voterData: Partial<User & { departmentIds: string[] }>
   ) => {
     try {
       const response = await axios.post("/api/voters", {

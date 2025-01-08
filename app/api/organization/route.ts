@@ -16,22 +16,29 @@ export async function POST(request: Request) {
       data: {
         name,
         creatorId,
+        members: {
+          create: {
+            userId: creatorId,
+            role: "ADMIN",
+          },
+        },
       },
       include: {
-        creator: true,   
-        votes: true,      
-        departments: true 
-      }
+        creator: true,
+        votes: true,
+        departments: true,
+        members: true,
+      },
     });
 
     return NextResponse.json(newOrganization, { status: 201 });
   } catch (error) {
     console.error("Detailed error:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to create organization",
-        details: error instanceof Error ? error.message : String(error)
-      }, 
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }

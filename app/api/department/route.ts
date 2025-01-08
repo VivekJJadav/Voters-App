@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       include: {
         parent: true,
         children: true,
-        voters: true,
+        members: true,
         organization: true,
         votes: true,
       },
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
       include: {
         parent: true,
         children: true,
-        voters: true,
+        members: true,
         organization: true,
         votes: true,
       },

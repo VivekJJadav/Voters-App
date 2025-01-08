@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import AddMembersDialog from "@/components/AddMemberDialog";
 import DepartmentTag from "./Department";
 import useGetVoters from "@/app/actions/useGetVoters";
+import { Department } from "@prisma/client";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -54,7 +55,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         <div className="flex flex-wrap gap-2">
           <AddMembersDialog organizationId={orgId} />
           <NewDepartmentDialog
-            label="New department"
+            label="Create a new department"
             organizationId={currentOrg.id}
             onSuccess={handleNewDepartment}
             departments={departments}
@@ -112,14 +113,14 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                         {voter.email}
                       </p>
                     </div>
-                    {voter.departments.length > 0 && (
+                    {voter.departments?.length > 0 && ( 
                       <div className="flex flex-wrap gap-1 sm:gap-2">
-                        {voter.departments.map((dept) => (
+                        {voter.departments.map((dept: any) => (
                           <span
                             key={dept.id}
                             className="px-2 py-0.5 text-xs bg-gray-100 rounded-full"
                           >
-                            {dept.department.name}
+                            {dept.name}
                           </span>
                         ))}
                       </div>

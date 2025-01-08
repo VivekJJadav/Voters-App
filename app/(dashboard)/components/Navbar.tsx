@@ -8,7 +8,7 @@ import { useMedia } from "react-use";
 import { Button } from "@/components/ui/button";
 import Selector from "@/components/SelectorForm";
 import NavButton from "./NavButton";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import NotificationDropdown from "./NotificationDropdown";
 import useAuthStore from "@/store/authStore";
@@ -85,6 +85,7 @@ const Navbar = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
+              <SheetTitle>Menu</SheetTitle>
               <nav className="flex flex-col gap-y-2 pt-6">
                 {routes.map((route) => (
                   <Button

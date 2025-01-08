@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { SelectedOrganizationProvider } from "@/context/SelectedOrganizationContext";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "The Voters",
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SelectedOrganizationProvider>{children}</SelectedOrganizationProvider>
+        <Toaster />
       </body>
     </html>
   );

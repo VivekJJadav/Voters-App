@@ -26,6 +26,7 @@ export const SignInCard = () => {
   const setUser = useAuthStore((state) => state.setUser);
 
   const searchParams = useSearchParams();
+  const organizationId = searchParams.get("organizationId");
 
   const form = useForm({
     defaultValues: {
@@ -37,7 +38,10 @@ export const SignInCard = () => {
   const onSubmit = async (values: { email: string; password: string }) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("/api/login", values);
+      const response = await axios.post("/api/login", {
+        ...values,
+        organizationId: organizationId || undefined,
+      });
 
       voterStore.setVoters([]);
 

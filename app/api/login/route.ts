@@ -1,3 +1,4 @@
+// api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import * as jose from "jose";
@@ -11,7 +12,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, password, organizationId } = body;
 
-    const user = await client.voter.findUnique({
+    console.log("Login request:", { email, organizationId });
+
+    const user = await client.user.findUnique({
       where: { email },
       include: {
         organizations: {
@@ -22,18 +25,14 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!user) {
-      console.error("User not found");
+    if (!user || !user.hashedPassword) {
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.hashedPassword!
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.hashedPassword);
 
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -42,66 +41,52 @@ export async function POST(request: Request) {
       );
     }
 
-    // if (
-    //   organizationId &&
-    //   !user.organizations.some((org) => org.organizationId === organizationId)
-    // ) {
-    //   await client.voterOrganization.create({
-    //     data: {
-    //       voter: {
-    //         connect: { id: user.id },
-    //       },
-    //       organization: {
-    //         connect: { id: organizationId },
-    //       },
-    //     },
-    //   });
-    // }
-
+    // Only handle organization membership if organizationId is provided
     if (organizationId) {
-      const existingRelation = await client.voterOrganization.findFirst({
+      const existingMembership = await client.organizationMember.findFirst({
         where: {
-          voterId: user.id,
+          userId: user.id,
           organizationId: organizationId,
         },
       });
 
-      if (!existingRelation) {
-        await client.voterOrganization.create({
+      if (!existingMembership) {
+        console.log("Creating new organization membership");
+        await client.organizationMember.create({
           data: {
-            voter: {
-              connect: { id: user.id },
-            },
-            organization: {
-              connect: { id: organizationId },
-            },
+            userId: user.id,
+            organizationId: organizationId,
+            role: "MEMBER",
           },
         });
       }
     }
 
-    // Always fetch fresh user data before responding
-    const updatedUser = await client.voter.findUnique({
+    // Fetch updated user data
+    const updatedUser = await client.user.findUnique({
       where: { id: user.id },
       include: {
         organizations: {
           include: {
-            organization: true,
+            organization: {
+              include: {
+                departments: true,
+              },
+            },
+          },
+        },
+        departments: {
+          include: {
+            department: true,
           },
         },
       },
     });
 
-    if (!updatedUser) {
-      return NextResponse.json(
-        { error: "Failed to fetch updated user data" },
-        { status: 500 }
-      );
-    }
-
+    // Create JWT token
     const token = await new jose.SignJWT({
-      id: updatedUser.id,
-      email: updatedUser.email,
+      id: user.id,
+      email: user.email,
       organizationId: organizationId || null,
     })
       .setProtectedHeader({ alg: "HS256" })
@@ -111,11 +96,12 @@ export async function POST(request: Request) {
     const response = NextResponse.json(
       {
         message: "Login successful",
-        user: updatedUser, // Using the fresh data
+        user: updatedUser,
       },
       { status: 200 }
     );
 
+    // Set cookie
     const maxAge = TOKEN_EXPIRATION.endsWith("h")
       ? parseInt(TOKEN_EXPIRATION) * 3600
       : parseInt(TOKEN_EXPIRATION);
@@ -129,9 +115,9 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("Server error:", error);
+    console.error("Login error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

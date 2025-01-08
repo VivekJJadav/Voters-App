@@ -27,7 +27,6 @@ import { toast } from "sonner";
 import { Department } from "@prisma/client";
 import SelectDepartmentForm from "./SelectDepartmentForm";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
 
 interface NewDepartmentDialogProps {
   label: string;
