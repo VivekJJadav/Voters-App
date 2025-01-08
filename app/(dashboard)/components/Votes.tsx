@@ -1,13 +1,8 @@
+import { Vote } from "@prisma/client";
 import VoteContainer from "./VoteContainer";
 
-type vote = {
-  name: string;
-  description: string;
-  isActive: boolean;
-};
-
 interface VoteContainerProps {
-  vote: vote;
+  vote: Vote;
 }
 
 const Votes = ({ vote }: VoteContainerProps) => {

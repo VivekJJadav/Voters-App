@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import AddMembersDialog from "@/components/AddMemberDialog";
 import DepartmentTag from "./Department";
 import useGetVoters from "@/app/actions/useGetVoters";
-import { Department } from "@prisma/client";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -25,8 +25,8 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   if (!currentOrg) {
     return (
-      <div className="flex items-center justify-center p-4">
-        <p className="text-gray-500">Organization not found</p>
+      <div className="flex items-center justify-center mt-48">
+        <LoadingSpinner size="md" />
       </div>
     );
   }
@@ -85,12 +85,8 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
       </div>
 
       <div className="mt-2 sm:mt-4 p-3 sm:p-4 bg-gray-100 border border-gray-300 rounded-lg">
-        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
-          Departments
-        </h2>
-
         <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 mt-3">
             Members
           </h2>
           {voters.length === 0 ? (
@@ -113,7 +109,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                         {voter.email}
                       </p>
                     </div>
-                    {voter.departments?.length > 0 && ( 
+                    {voter.departments?.length > 0 && (
                       <div className="flex flex-wrap gap-1 sm:gap-2">
                         {voter.departments.map((dept: any) => (
                           <span
@@ -132,6 +128,10 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           )}
         </div>
 
+        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 mt-3">
+          Departments
+        </h2>
+
         {!loading ? (
           <div className="space-y-2">
             {departments.length !== 0 ? (
@@ -148,7 +148,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             )}
           </div>
         ) : (
-          <p className="text-sm sm:text-base">Loading departments...</p>
+          <p className="text-sm sm:text-base"><LoadingSpinner size="sm"/></p>
         )}
       </div>
     </div>

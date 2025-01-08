@@ -6,6 +6,7 @@ import OrganizationPage from "../components/OrganizationPage";
 import SelectorForm from "@/components/SelectorForm";
 import OrganizationTag from "../components/OrganizationTag";
 import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const Organization = () => {
   const { organizations, loading, error, handleNewOrganization } =
@@ -13,17 +14,18 @@ const Organization = () => {
 
   const { selectedOrgId } = useSelectedOrganization();
 
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+        <LoadingSpinner size="lg"/>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen">
       <div className="fixed top-0 w-full bg-white z-10 py-2 px-4">
-        {organizations.length === 0 ? (
-          <div className="mt-[390px] flex items-center justify-center">
-            <NewOrganizationDialog
-              label="Create a new organization"
-              onSuccess={(Org) => handleNewOrganization(Org)}
-            />
-          </div>
-        ) : (
+        {organizations.length !== 0 ? (
           <div className="mt-28 flex">
             <NewOrganizationDialog
               label="Create a new organization"
@@ -35,6 +37,13 @@ const Organization = () => {
                 placeholder="Select an organization"
               />
             </div>
+          </div>
+        ) : (
+          <div className="mt-[390px] flex items-center justify-center">
+            <NewOrganizationDialog
+              label="Create a new organization"
+              onSuccess={(Org) => handleNewOrganization(Org)}
+            />
           </div>
         )}
       </div>

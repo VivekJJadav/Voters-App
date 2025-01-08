@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { X } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import {
   Command,
@@ -11,61 +10,31 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
+import useGetVoters from "@/app/actions/useGetVoters";
+import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
+import { User } from "@prisma/client";
 
-type Members = Record<"value" | "label", string>;
+interface CandidateSelectionProps {
+  value: User[];
+  onChange: (users: User[]) => void;
+}
 
-const MEMBERS = [
-  {
-    value: "member 1",
-    label: "Member 1",
-  },
-  {
-    value: "member 2",
-    label: "Member 2",
-  },
-  {
-    value: "member 3",
-    label: "Member 3",
-  },
-  {
-    value: "member 4",
-    label: "Member 4",
-  },
-  {
-    value: "member 5",
-    label: "Member 5",
-  },
-  {
-    value: "member 6",
-    label: "Member 6",
-  },
-  {
-    value: "member 7",
-    label: "Member 7",
-  },
-  {
-    value: "member 8",
-    label: "Member 8",
-  },
-  {
-    value: "member 9",
-    label: "Member 9",
-  },
-  {
-    value: "member 10",
-    label: "Member 10",
-  },
-] satisfies Members[];
-
-const CandidateSelection = () => {
+const CandidateSelection = ({ value, onChange }: CandidateSelectionProps) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
-  const [selected, setSelected] = React.useState<Members[]>([]);
   const [inputValue, setInputValue] = React.useState("");
 
-  const handleUnselect = React.useCallback((members: Members) => {
-    setSelected((prev) => prev.filter((s) => s.value !== members.value));
-  }, []);
+  const { selectedOrgId } = useSelectedOrganization();
+  const { voters = [] } = selectedOrgId
+    ? useGetVoters(selectedOrgId)
+    : { voters: [] };
+
+  const handleUnselect = React.useCallback(
+    (voter: User) => {
+      onChange(value.filter((s) => s.id !== voter.id));
+    },
+    [onChange, value]
+  );
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -73,23 +42,20 @@ const CandidateSelection = () => {
       if (input) {
         if (e.key === "Delete" || e.key === "Backspace") {
           if (input.value === "") {
-            setSelected((prev) => {
-              const newSelected = [...prev];
-              newSelected.pop();
-              return newSelected;
-            });
+            onChange(value.slice(0, -1));
           }
         }
-        // This is not a default behaviour of the <input /> field
         if (e.key === "Escape") {
           input.blur();
         }
       }
     },
-    []
+    [onChange, value]
   );
 
-  const selectables = MEMBERS.filter((member) => !selected.includes(member));
+  const selectables = voters.filter(
+    (voter) => !value.some((s) => s.id === voter.id)
+  );
 
   return (
     <Command
@@ -98,36 +64,39 @@ const CandidateSelection = () => {
     >
       <div className="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
         <div className="flex flex-wrap gap-1">
-          {selected.map((member) => {
+          {value.map((voter) => {
             return (
-              <Badge key={member.value} variant="secondary">
-                {member.label}
+              <Badge key={voter.id} variant="secondary">
+                {voter.name}
                 <button
                   className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      handleUnselect(member);
+                      handleUnselect(voter);
                     }
                   }}
                   onMouseDown={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                   }}
-                  onClick={() => handleUnselect(member)}
+                  onClick={() => handleUnselect(voter)}
                 >
                   <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
                 </button>
               </Badge>
             );
           })}
-          {/* Avoid having the "Search" Icon */}
           <CommandPrimitive.Input
             ref={inputRef}
             value={inputValue}
             onValueChange={setInputValue}
             onBlur={() => setOpen(false)}
             onFocus={() => setOpen(true)}
-            placeholder="Select candidates..."
+            placeholder={
+              voters.length === 0
+                ? "Please select organization"
+                : "Select candidates..."
+            }
             className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -137,21 +106,21 @@ const CandidateSelection = () => {
           {open && selectables.length > 0 ? (
             <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
               <CommandGroup className="h-full overflow-auto">
-                {selectables.map((member) => {
+                {selectables.map((voter) => {
                   return (
                     <CommandItem
-                      key={member.value}
+                      key={voter.id}
                       onMouseDown={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                       }}
-                      onSelect={(value) => {
+                      onSelect={() => {
                         setInputValue("");
-                        setSelected((prev) => [...prev, member]);
+                        onChange([...value, voter]);
                       }}
                       className={"cursor-pointer"}
                     >
-                      {member.label}
+                      {voter.name}
                     </CommandItem>
                   );
                 })}

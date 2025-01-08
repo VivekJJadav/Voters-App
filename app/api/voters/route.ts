@@ -32,8 +32,6 @@ export async function GET(request: Request) {
       },
     });
 
-    console.log("Members:", members);
-
     const voters = members.map((member) => ({
       ...member.user,
       role: member.role,

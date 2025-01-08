@@ -61,7 +61,7 @@ model Vote {
   name         String    @db.String()
   description  String    @db.String()
   startTime    DateTime
-  endTime      DateTime
+  endTime      DateTime?
   extendedTime DateTime?
   isAnonymous  Boolean   @default(false)
   voteType     VoteType  @default(MULTIPLE_CHOICE)
