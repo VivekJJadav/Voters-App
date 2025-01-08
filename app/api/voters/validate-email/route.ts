@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const existingUser = await client.voter.findUnique({ where: { email } });
+    const existingUser = await client.user.findUnique({ where: { email } });
 
     if (existingUser) {
       return new Response(
