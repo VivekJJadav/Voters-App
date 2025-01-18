@@ -6,13 +6,12 @@ import { useScrollTop } from "@/hooks/use-scroll-top";
 import { cn } from "@/lib/utils";
 import { useMedia } from "react-use";
 import { Button } from "@/components/ui/button";
-import Selector from "@/components/SelectorForm";
 import NavButton from "./NavButton";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import NotificationDropdown from "./NotificationDropdown";
 import useAuthStore from "@/store/authStore";
-import shallow from "zustand/shallow";
+import { User } from "@prisma/client";
 
 const routes = [
   {
@@ -41,7 +40,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMedia("(max-width: 1024px)", false);
 
-  const user  = useAuthStore((state) => state.user);
+  const user  = useAuthStore((state) => state.user) as User;
 
   const logout = useAuthStore((state) => state.logout);
 
@@ -52,7 +51,7 @@ const Navbar = () => {
 
   const onClick = async (href: string) => {
     try {
-      await router.push(href);
+      router.push(href);
       setIsOpen(false);
     } catch (error) {
       console.error("Navigation failed:", error);

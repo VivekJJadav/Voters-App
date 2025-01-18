@@ -1,155 +1,92 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
-import {
-  Vote
-} from "@prisma/client";
+import { Vote } from "@prisma/client";
 import { toast } from "sonner";
 
-type Listener = () => void;
+interface VoteData {
+  name: string;
+  description: string;
+  candidates: { userId: string }[];
+  startTime: Date;
+  endTime: Date;
+  isAnonymous: boolean;
+  voteType: string;
+}
 
-export const voteStore = {
-  listeners: new Set<Listener>(),
-  votes: [] as Vote[],
+interface UseVotesResult {
+  votes: Vote[];
+  loading: boolean;
+  error: string | null;
+  createVote: (data: VoteData) => Promise<Vote>;
+  deleteVote: (id: string) => Promise<void>;
+  updateVote: (vote: Vote) => Promise<Vote>;
+  refreshVotes: () => Promise<void>;
+}
 
-  subscribe(listener: Listener) {
-    this.listeners.add(listener);
-    return () => {
-      this.listeners.delete(listener);
-    };
-  },
-
-  notify() {
-    this.listeners.forEach((listener) => listener());
-  },
-
-  setVotes(votes: Vote[]) {
-    if (JSON.stringify(this.votes) !== JSON.stringify(votes)) {
-      this.votes = votes;
-      this.notify();
-    }
-  },
-
-  addVote(vote: Vote) {
-    this.votes = [...this.votes, vote];
-    this.notify();
-  },
-
-  removeVote(id: string) {
-    this.votes = this.votes.filter((vote) => vote.id !== id);
-    this.notify();
-  },
-
-  updateVote(updatedVote: Vote) {
-    const index = this.votes.findIndex((vote) => vote.id === updatedVote.id);
-    if (
-      index !== -1 &&
-      JSON.stringify(this.votes[index]) !== JSON.stringify(updatedVote)
-    ) {
-      this.votes = this.votes.map((vote) =>
-        vote.id === updatedVote.id ? updatedVote : vote
-      );
-      this.notify();
-    }
-  },
-};
-
-const useGetVotes = (organizationId: string) => {
+const useVotes = (organizationId: string): UseVotesResult => {
   const user = useAuthStore((state) => state.user);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const initialized = useRef(false);
-  const prevOrgId = useRef(organizationId);
 
-  useEffect(() => {
-    if (prevOrgId.current !== organizationId) {
-      initialized.current = false;
-      prevOrgId.current = organizationId;
+  const fetchVotes = useCallback(async () => {
+    if (!user?.id || !organizationId) {
+      setLoading(false);
+      return;
     }
 
-    const fetchVotes = async () => {
-      if (!user?.id || !organizationId) {
-        setLoading(false);
-        return;
-      }
+    setLoading(true);
+    setError(null);
 
-      if (!initialized.current) {
-        setLoading(true);
-        setError(null);
+    try {
+      const response = await axios.get("/api/vote", {
+        headers: { organizationId },
+      });
+      setVotes(response.data || []);
+    } catch (err) {
+      console.error("Error fetching votes:", err);
+      setError("Failed to fetch votes. Please try again later.");
+      setVotes([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id, organizationId]);
 
-        try {
-          const response = await axios.get("/api/vote", {
-            headers: { organizationId },
-          });
-
-          const votes = response.data || [];
-          voteStore.setVotes(votes);
-          setVotes(votes);
-          initialized.current = true;
-        } catch (error) {
-          console.error("Error fetching votes:", error);
-          setError("Failed to fetch votes. Please try again later.");
-          setVotes([]);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
+  useEffect(() => {
     fetchVotes();
 
-    const unsubscribe = voteStore.subscribe(() => {
-      const newVotes = [...voteStore.votes];
-      setVotes((prevVotes) => {
-        if (JSON.stringify(prevVotes) !== JSON.stringify(newVotes)) {
-          return newVotes;
-        }
-        return prevVotes;
-      });
-    });
-
     const unsubscribeAuth = useAuthStore.subscribe((state) => {
-      if (state.user && initialized.current) {
-        initialized.current = false;
+      if (state.user) {
         fetchVotes();
       }
     });
 
     return () => {
-      unsubscribe();
       unsubscribeAuth();
-      initialized.current = false;
     };
-  }, [user?.id, organizationId]);
+  }, [fetchVotes]);
 
-  const handleCreateVote = async (voteData: {
-    name: string;
-    description: string;
-    candidates: { userId: string }[];
-    startTime: Date;
-    endTime: Date;
-    isAnonymous: boolean;
-    voteType: string;
-  }) => {
+  const createVote = async (voteData: VoteData): Promise<Vote> => {
     try {
       const response = await axios.post("/api/vote", {
         ...voteData,
         organizationId,
       });
-      const createdVote = response.data;
-      voteStore.addVote(createdVote);
 
+      const createdVote = response.data;
+      setVotes((current) => [...current, createdVote]);
       toast.success("Vote created successfully");
+
       return createdVote;
-    } catch (error) {
-      console.error("Error creating vote:", error);
+    } catch (err) {
+      console.error("Error creating vote:", err);
       toast.error("Failed to create vote. Please try again later.");
-      throw error;
+      throw err;
     }
   };
 
-  const handleDeleteVote = async (id: string) => {
+  const deleteVote = async (id: string): Promise<void> => {
     if (!organizationId) {
       toast.error("Organization ID is missing");
       return;
@@ -164,41 +101,32 @@ const useGetVotes = (organizationId: string) => {
         data: { id },
       });
 
-      voteStore.removeVote(id);
+      setVotes((current) => current.filter((vote) => vote.id !== id));
       toast.success("Vote deleted successfully");
-    } catch (error) {
-      console.error("Error deleting vote:", error);
-
-      try {
-        const response = await axios.get("/api/vote", {
-          headers: { organizationId },
-        });
-        voteStore.setVotes(response.data || []);
-      } catch (refreshError) {
-        console.error("Error refreshing votes:", refreshError);
-      }
-
+    } catch (err) {
+      console.error("Error deleting vote:", err);
       toast.error("Failed to delete vote");
-      throw error;
+      await fetchVotes();
+      throw err;
     }
   };
 
-  const handleUpdateVote = async (updatedVote: Vote) => {
+  const updateVote = async (updatedVote: Vote): Promise<Vote> => {
     try {
       const response = await axios.put(`/api/vote`, updatedVote, {
         headers: { organizationId },
       });
-      const updatedData = response.data;
 
-      voteStore.updateVote(updatedData);
+      const updatedData = response.data;
+      setVotes((current) =>
+        current.map((vote) => (vote.id === updatedData.id ? updatedData : vote))
+      );
+
       return updatedData;
-    } catch (error) {
-      console.error("Error updating vote:", error);
-      const response = await axios.get("/api/vote", {
-        headers: { organizationId },
-      });
-      voteStore.setVotes(response.data || []);
-      throw error;
+    } catch (err) {
+      console.error("Error updating vote:", err);
+      await fetchVotes();
+      throw err;
     }
   };
 
@@ -206,10 +134,11 @@ const useGetVotes = (organizationId: string) => {
     votes,
     loading,
     error,
-    handleCreateVote,
-    handleDeleteVote,
-    handleUpdateVote,
+    createVote,
+    deleteVote,
+    updateVote,
+    refreshVotes: fetchVotes,
   };
 };
 
-export default useGetVotes;
+export default useVotes;

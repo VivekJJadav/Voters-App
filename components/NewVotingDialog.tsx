@@ -33,18 +33,19 @@ import axios from "axios";
 
 interface NewVotingDialogProps {
   label: string;
+  onVoteCreated?: () => void; 
 }
 
 const RequiredIndicator = () => <span className="text-red-500 ml-1">*</span>;
 
-const NewVotingDialog = ({ label }: NewVotingDialogProps) => {
+const NewVotingDialog = ({ label, onVoteCreated }: NewVotingDialogProps) => {
   const { selectedOrgId } = useSelectedOrganization();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(true);
   const [votingType, setVotingType] = useState<string>("SINGLE_CHOICE");
   const [selectedCandidates, setSelectedCandidates] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
@@ -91,6 +92,8 @@ const handleSubmit = async () => {
     toast.success("Vote created successfully");
     setOpen(false);
     resetForm();
+
+    onVoteCreated?.();
   } catch (error) {
     toast.error(
       error instanceof Error ? error.message : "Failed to create vote"
@@ -105,7 +108,7 @@ const handleSubmit = async () => {
     setDescription("");
     setStartDate(new Date());
     setEndDate(new Date());
-    setIsAnonymous(false);
+    setIsAnonymous(true);
     setVotingType("SINGLE_CHOICE");
     setSelectedCandidates([]);
   };
