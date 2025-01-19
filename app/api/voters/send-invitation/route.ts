@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     const { emails, names, organizationId, departmentId } =
       await request.json();
 
+    // Only check for required fields, removing departmentId from validation
     if (!emails?.length || !names?.length || !organizationId) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -24,14 +25,17 @@ export async function POST(request: Request) {
       );
     }
 
+    // Modify Promise.all to handle optional department
     const [organization, department] = await Promise.all([
       client.organization.findUnique({
         where: { id: organizationId },
       }),
-      client.department.findUnique({
-        where: { id: departmentId },
-        select: { id: true, name: true },
-      }),
+      departmentId
+        ? client.department.findUnique({
+            where: { id: departmentId },
+            select: { id: true, name: true },
+          })
+        : null,
     ]);
 
     if (!organization) {
@@ -41,12 +45,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!department) {
-      return NextResponse.json(
-        { error: "Department not found" },
-        { status: 404 }
-      );
-    }
+    // Remove department check since it's optional
 
     const results: SendInvitationResult[] = [];
 
@@ -59,13 +58,18 @@ export async function POST(request: Request) {
           where: { email },
         });
         const redirectPath = existingUser ? "sign-in" : "sign-up";
+
+        // Construct URL parameters without departmentId if it's not provided
+        const urlParams = new URLSearchParams({
+          email: email,
+          name: name,
+          organizationId: organizationId,
+          ...(departmentId && { departmentId }),
+        });
+
         const link = `${
           process.env.NEXT_PUBLIC_APP_URL
-        }/${redirectPath}?email=${encodeURIComponent(
-          email
-        )}&name=${encodeURIComponent(name)}&organizationId=${encodeURIComponent(
-          organizationId
-        )}&departmentId=${encodeURIComponent(departmentId)}`;
+        }/${redirectPath}?${urlParams.toString()}`;
 
         const emailData = new EmailParams()
           .setFrom({
@@ -83,8 +87,12 @@ export async function POST(request: Request) {
             <div>
               <p>${
                 existingUser
-                  ? `Sign in to join ${organization.name} in the ${department.name} department`
-                  : `Accept the invitation to join ${organization.name} in the ${department.name} department!`
+                  ? `Sign in to join ${organization.name}${
+                      department ? ` in the ${department.name} department` : ""
+                    }`
+                  : `Accept the invitation to join ${organization.name}${
+                      department ? ` in the ${department.name} department` : ""
+                    }!`
               }</p>
               <a href="${link}" style="background: #4CAF50; color: white; padding: 14px 20px; text-decoration: none; border-radius: 4px;">
                 ${existingUser ? "Sign In" : "Sign Up"}
@@ -94,13 +102,17 @@ export async function POST(request: Request) {
           )
           .setText(
             existingUser
-              ? `Sign in to join ${organization.name} in the ${department.name} department: ${link}`
-              : `Accept the invitation to join ${organization.name} in the ${department.name} department! ${link}`
+              ? `Sign in to join ${organization.name}${
+                  department ? ` in the ${department.name} department` : ""
+                }: ${link}`
+              : `Accept the invitation to join ${organization.name}${
+                  department ? ` in the ${department.name} department` : ""
+                }! ${link}`
           );
-          
+
         await mailersend.email.send(emailData);
 
-        if (existingUser) {
+        if (existingUser && departmentId) {
           await client.userDepartment.create({
             data: {
               userId: existingUser.id,
