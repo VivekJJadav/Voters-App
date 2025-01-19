@@ -4,10 +4,23 @@ import client from "@/app/libs/prismadb";
 
 export async function POST(req: Request) {
   try {
+    const url = new URL(req.url);
+    const searchParams = new URLSearchParams(url.search);
     const body = await req.json();
-    const { name, email, password, organizationId } = body;
 
-    console.log("Body:", body);
+    const name = body.name || searchParams.get("name");
+    const email = body.email || searchParams.get("email");
+    const password = body.password || searchParams.get("password");
+    const organizationId =
+      body.organizationId || searchParams.get("organizationId");
+    const departmentId = body.departmentId || searchParams.get("departmentId");
+
+    console.log("Registration data:", {
+      name,
+      email,
+      organizationId,
+      departmentId, 
+    });
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -15,6 +28,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    let userId: string;
 
     const existingUser = await client.user.findUnique({
       where: { email },
@@ -42,50 +57,122 @@ export async function POST(req: Request) {
         );
       }
 
-      const member = await client.organizationMember.create({
-        data: {
-          userId: existingUser.id,
-          organizationId,
-          role: "MEMBER",
-        },
-      });
-
-      console.log("Member:", member);
-
-      return NextResponse.json(
-        { message: "User added to organization" },
-        { status: 200 }
-      );
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await client.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          name,
-          email,
-          hashedPassword,
-        },
-      });
-
-      if (organizationId) {
+      await client.$transaction(async (tx) => {
         await tx.organizationMember.create({
           data: {
-            userId: user.id,
+            userId: existingUser.id,
             organizationId,
             role: "MEMBER",
           },
         });
-      }
+
+        if (departmentId) {
+          const existingDepartmentMembership =
+            await tx.userDepartment.findFirst({
+              where: {
+                userId: existingUser.id,
+                departmentId: departmentId,
+              },
+            });
+
+          if (!existingDepartmentMembership) {
+            console.log("Creating department membership for existing user:", {
+              userId: existingUser.id,
+              departmentId,
+            });
+
+            await tx.userDepartment.create({
+              data: {
+                userId: existingUser.id,
+                departmentId: departmentId,
+              },
+            });
+          }
+        }
+      });
+
+      userId = existingUser.id;
+    } else {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const newUser = await client.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            name,
+            email,
+            hashedPassword,
+          },
+        });
+
+        if (organizationId) {
+          await tx.organizationMember.create({
+            data: {
+              userId: user.id,
+              organizationId,
+              role: "MEMBER",
+            },
+          });
+        }
+
+        if (departmentId) {
+          console.log("Creating department membership for new user:", {
+            userId: user.id,
+            departmentId,
+          });
+
+          await tx.userDepartment.create({
+            data: {
+              userId: user.id,
+              departmentId: departmentId,
+            },
+          });
+        }
+
+        return user;
+      });
+
+      userId = newUser.id;
+    }
+
+    const completeUser = await client.user.findUnique({
+      where: { id: userId },
+      include: {
+        organizations: {
+          include: {
+            organization: {
+              include: {
+                departments: true,
+              },
+            },
+          },
+        },
+        departments: {
+          include: {
+            department: true,
+          },
+        },
+      },
     });
 
     return NextResponse.json(
-      { message: "User registered successfully" },
+      {
+        message: "User registered successfully",
+        user: completeUser,
+      },
       { status: 201 }
     );
   } catch (error) {
-    console.error(error);
+    console.error("Registration error:", error);
+
+    if (error instanceof Error) {
+      if (error.message.includes("foreign key constraint")) {
+        return NextResponse.json(
+          { error: "Invalid department or organization ID" },
+          { status: 400 }
+        );
+      }
+    }
+
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

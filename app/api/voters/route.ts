@@ -4,10 +4,10 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   try {
     const organizationId = request.headers.get("organizationId");
-
+   
     if (!organizationId) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
+        { error: "Organization ID and authentication required" },
         { status: 400 }
       );
     }
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
         organizationId: organizationId,
         NOT: {
           role: "ADMIN",
-        }
+        },
       },
       include: {
         user: {
@@ -26,7 +26,17 @@ export async function GET(request: Request) {
             name: true,
             email: true,
             isCandidate: true,
-            departments: true,
+            departments: {
+              include: {
+                department: {
+                  select: {
+                    id: true,
+                    name: true,
+                    organizationId: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -35,7 +45,7 @@ export async function GET(request: Request) {
     const voters = members.map((member) => ({
       ...member.user,
       role: member.role,
-      departments: [], 
+      departments: member.user.departments.map((ud) => ud.department),
     }));
 
     return NextResponse.json(voters);
@@ -62,7 +72,6 @@ export async function DELETE(request: Request) {
     }
 
     await client.$transaction(async (prisma) => {
-      // Delete department memberships
       await prisma.userDepartment.deleteMany({
         where: {
           userId: id,
@@ -72,7 +81,6 @@ export async function DELETE(request: Request) {
         },
       });
 
-      // Delete organization membership
       await prisma.organizationMember.deleteMany({
         where: {
           userId: id,

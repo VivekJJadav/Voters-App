@@ -59,17 +59,21 @@ function parseCSV(csvText: string): Array<{ [key: string]: string }> {
   return result;
 }
 
+interface AddMembersDialogProps {
+  organizationId: string;
+}
+
 export default function AddMembersDialog({
   organizationId,
-}: {
-  organizationId: string;
-}) {
+}: AddMembersDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+
   const { departments, loading: loadingDepartments } =
     useGetDepartments(organizationId);
   const [manualEntry, setManualEntry] = useState<
@@ -105,26 +109,6 @@ export default function AddMembersDialog({
           error: "Email already exists in the current list",
         };
       }
-
-      // const response = await axios.post("/api/voters/validate-email", {
-      //   email: member.email,
-      // });
-
-      // if (response.data?.message === "Email already exists") {
-      //   return {
-      //     ...member,
-      //     isValid: false,
-      //     error: "Email already exists in the system",
-      //   };
-      // }
-
-      // if (!response.data?.isValid) {
-      //   return {
-      //     ...member,
-      //     isValid: false,
-      //     error: response.data?.message || "Failed to validate email",
-      //   };
-      // }
 
       return { ...member, isValid: true };
     } catch (err) {
@@ -245,6 +229,7 @@ export default function AddMembersDialog({
         emails: validMembers.map((member) => member.email),
         names: validMembers.map((member) => member.name),
         organizationId,
+        departmentId: selectedDepartment,
       });
 
       if (response.data.partialSuccess) {
@@ -285,6 +270,30 @@ export default function AddMembersDialog({
   const removeMember = (email: string) => {
     setMembers(members.filter((m) => m.email !== email));
   };
+
+  const getDepartmentPath = (
+    deptId: string,
+    deps = new Set<string>()
+  ): string => {
+    if (deps.has(deptId)) return ""; 
+    deps.add(deptId);
+
+    const dept = departments.find((d) => d.id === deptId);
+    if (!dept) return "";
+
+    if (!dept.parentId) return dept.name;
+
+    const parentPath = getDepartmentPath(dept.parentId, deps);
+    return `${parentPath} - ${dept.name}`;
+  };
+
+  const sortedDepartments = React.useMemo(() => {
+    return [...departments].sort((a, b) => {
+      const pathA = getDepartmentPath(a.id);
+      const pathB = getDepartmentPath(b.id);
+      return pathA.localeCompare(pathB);
+    });
+  }, [departments]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -345,22 +354,20 @@ export default function AddMembersDialog({
                 />
               </div>
 
-              <div className="grid gap-2">
+              <div className="grid gap-2 mb-4">
                 <Label htmlFor="department">Department</Label>
                 <Select
-                  value={manualEntry.department}
-                  onValueChange={(value) =>
-                    setManualEntry((prev) => ({ ...prev, department: value }))
-                  }
+                  value={selectedDepartment}
+                  onValueChange={setSelectedDepartment}
                   disabled={loadingDepartments}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {departments.map((dept) => (
+                    {sortedDepartments.map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
-                        {dept.name}
+                        {getDepartmentPath(dept.id)}
                       </SelectItem>
                     ))}
                   </SelectContent>

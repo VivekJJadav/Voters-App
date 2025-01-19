@@ -1,4 +1,3 @@
-// api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import * as jose from "jose";
@@ -10,9 +9,7 @@ const TOKEN_EXPIRATION = "1h";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, organizationId } = body;
-
-    console.log("Login request:", { email, organizationId });
+    const { email, password, organizationId, departmentId } = body;
 
     const user = await client.user.findUnique({
       where: { email },
@@ -41,28 +38,50 @@ export async function POST(request: Request) {
       );
     }
 
-    // Only handle organization membership if organizationId is provided
-    if (organizationId) {
-      const existingMembership = await client.organizationMember.findFirst({
-        where: {
-          userId: user.id,
-          organizationId: organizationId,
-        },
-      });
+    if (organizationId || departmentId) {
+      await client.$transaction(async (tx) => {
+        if (organizationId) {
+          const existingMembership = await tx.organizationMember.findFirst({
+            where: {
+              userId: user.id,
+              organizationId: organizationId,
+            },
+          });
 
-      if (!existingMembership) {
-        console.log("Creating new organization membership");
-        await client.organizationMember.create({
-          data: {
-            userId: user.id,
-            organizationId: organizationId,
-            role: "MEMBER",
-          },
-        });
-      }
+          if (!existingMembership) {
+            console.log("Creating new organization membership");
+            await tx.organizationMember.create({
+              data: {
+                userId: user.id,
+                organizationId: organizationId,
+                role: "MEMBER",
+              },
+            });
+          }
+        }
+
+        if (departmentId) {
+          const existingDepartmentMembership =
+            await tx.userDepartment.findFirst({
+              where: {
+                userId: user.id,
+                departmentId: departmentId,
+              },
+            });
+
+          if (!existingDepartmentMembership) {
+            console.log("Creating new department membership");
+            await tx.userDepartment.create({
+              data: {
+                userId: user.id,
+                departmentId: departmentId,
+              },
+            });
+          }
+        }
+      });
     }
 
-    // Fetch updated user data
     const updatedUser = await client.user.findUnique({
       where: { id: user.id },
       include: {
@@ -83,11 +102,11 @@ export async function POST(request: Request) {
       },
     });
 
-    // Create JWT token
     const token = await new jose.SignJWT({
       id: user.id,
       email: user.email,
       organizationId: organizationId || null,
+      departmentId: departmentId || null,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime(TOKEN_EXPIRATION)
@@ -95,13 +114,14 @@ export async function POST(request: Request) {
 
     const response = NextResponse.json(
       {
-        message: "Login successful",
+        message: organizationId
+          ? "Login successful and organization membership updated"
+          : "Login successful",
         user: updatedUser,
       },
       { status: 200 }
     );
 
-    // Set cookie
     const maxAge = TOKEN_EXPIRATION.endsWith("h")
       ? parseInt(TOKEN_EXPIRATION) * 3600
       : parseInt(TOKEN_EXPIRATION);
@@ -116,6 +136,22 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error("Login error:", error);
+
+    if (error instanceof Error) {
+      if (error.message.includes("unique constraint")) {
+        return NextResponse.json(
+          { error: "User already exists in this department" },
+          { status: 409 }
+        );
+      }
+      if (error.message.includes("foreign key constraint")) {
+        return NextResponse.json(
+          { error: "Invalid department or organization ID" },
+          { status: 400 }
+        );
+      }
+    }
+
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

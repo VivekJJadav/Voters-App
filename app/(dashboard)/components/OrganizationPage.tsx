@@ -8,6 +8,8 @@ import AddMembersDialog from "@/components/AddMemberDialog";
 import DepartmentTag from "./Department";
 import useGetVoters from "@/app/actions/useGetVoters";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import NewVotingDialog from "@/components/NewVotingDialog";
+import useGetVotes from "@/app/actions/useGetVotes";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -22,6 +24,8 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   const { voters } = useGetVoters(orgId);
 
   const currentOrg = organizations.find((org) => org.id === orgId);
+
+  const { refreshVotes } = useGetVotes(orgId);
 
   if (!currentOrg) {
     return (
@@ -67,6 +71,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         </div>
 
         <div className="flex space-x-2">
+          <NewVotingDialog label="create a vote" onVoteCreated={refreshVotes} />
           <Button
             variant="outline"
             className="text-xs sm:text-sm flex-1 sm:flex-none"
@@ -105,20 +110,22 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                       <p className="text-sm sm:text-base font-medium">
                         {voter.name}
                       </p>
-                      <p className="text-xs sm:text-sm text-gray-600">
+                      <p className="text-sm sm:text-base font-medium">
                         {voter.email}
                       </p>
                     </div>
                     {voter.departments?.length > 0 && (
                       <div className="flex flex-wrap gap-1 sm:gap-2">
-                        {voter.departments.map((dept: any) => (
-                          <span
-                            key={dept.id}
-                            className="px-2 py-0.5 text-xs bg-gray-100 rounded-full"
-                          >
-                            {dept.name}
-                          </span>
-                        ))}
+                        {voter.departments
+                          .filter((dept: any) => dept.organizationId === orgId)
+                          .map((dept: any) => (
+                            <span
+                              key={dept.id}
+                              className="px-2 py-0.5 text-xs bg-gray-100 rounded-full"
+                            >
+                              {dept.name}
+                            </span>
+                          ))}
                       </div>
                     )}
                   </div>
@@ -148,7 +155,9 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             )}
           </div>
         ) : (
-          <p className="text-sm sm:text-base"><LoadingSpinner size="sm"/></p>
+          <div className="text-sm sm:text-base">
+            <LoadingSpinner size="sm" />
+          </div>
         )}
       </div>
     </div>

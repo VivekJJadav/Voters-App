@@ -14,7 +14,8 @@ const mailersend = new MailerSend({
 
 export async function POST(request: Request) {
   try {
-    const { emails, names, organizationId } = await request.json();
+    const { emails, names, organizationId, departmentId } =
+      await request.json();
 
     if (!emails?.length || !names?.length || !organizationId) {
       return NextResponse.json(
@@ -23,13 +24,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const organization = await client.organization.findUnique({
-      where: { id: organizationId },
-    });
+    const [organization, department] = await Promise.all([
+      client.organization.findUnique({
+        where: { id: organizationId },
+      }),
+      client.department.findUnique({
+        where: { id: departmentId },
+        select: { id: true, name: true },
+      }),
+    ]);
 
     if (!organization) {
       return NextResponse.json(
         { error: "Organization not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!department) {
+      return NextResponse.json(
+        { error: "Department not found" },
         { status: 404 }
       );
     }
@@ -51,7 +65,7 @@ export async function POST(request: Request) {
           email
         )}&name=${encodeURIComponent(name)}&organizationId=${encodeURIComponent(
           organizationId
-        )}`;
+        )}&departmentId=${encodeURIComponent(departmentId)}`;
 
         const emailData = new EmailParams()
           .setFrom({
@@ -69,9 +83,9 @@ export async function POST(request: Request) {
             <div>
               <p>${
                 existingUser
-                  ? `Sign in to join ${organization.name}`
-                  : "Accept the invitation!"
-              }:</p>
+                  ? `Sign in to join ${organization.name} in the ${department.name} department`
+                  : `Accept the invitation to join ${organization.name} in the ${department.name} department!`
+              }</p>
               <a href="${link}" style="background: #4CAF50; color: white; padding: 14px 20px; text-decoration: none; border-radius: 4px;">
                 ${existingUser ? "Sign In" : "Sign Up"}
               </a>
@@ -80,11 +94,21 @@ export async function POST(request: Request) {
           )
           .setText(
             existingUser
-              ? `Sign in to join ${organization.name}: ${link}`
-              : `Accept the invitation! ${link}`
+              ? `Sign in to join ${organization.name} in the ${department.name} department: ${link}`
+              : `Accept the invitation to join ${organization.name} in the ${department.name} department! ${link}`
           );
-
+          
         await mailersend.email.send(emailData);
+
+        if (existingUser) {
+          await client.userDepartment.create({
+            data: {
+              userId: existingUser.id,
+              departmentId,
+            },
+          });
+        }
+
         results.push({ email, success: true });
       } catch (error) {
         console.error(`Failed to send email to ${emails[i]}:`, error);

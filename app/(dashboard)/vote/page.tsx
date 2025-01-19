@@ -14,16 +14,16 @@ const Vote = () => {
 
   const { selectedOrgId } = useSelectedOrganization();
 
-  const { votes, loading, refreshVotes } = useGetVotes(selectedOrgId || "");
+  const { votes, loading } = useGetVotes(selectedOrgId || "");
 
   return (
     <div className="flex flex-col">
       <div className="py-2 px-2 mt-28 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white">
-        <NewVotingDialog
+        {/* <NewVotingDialog
           label="Create your own voting"
           onVoteCreated={refreshVotes}
-        />
-        <NewOrganizationDialog label="Create new organization" />
+        /> */}
+        {/* <NewOrganizationDialog label="Create new organization" /> */}
         <SelectorForm
           values={organizations}
           placeholder="Select a organization"

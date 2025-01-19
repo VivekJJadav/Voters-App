@@ -74,14 +74,26 @@ const useGetVoters = (organizationId: string) => {
   const prevOrgId = useRef(organizationId);
 
   useEffect(() => {
-    // Reset initialization when organization changes
     if (prevOrgId.current !== organizationId) {
       initialized.current = false;
       prevOrgId.current = organizationId;
     }
 
+    const api = axios.create({
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
     const fetchVoters = async () => {
+      console.log("Fetching voters with:", {
+        userId: user?.id,
+        organizationId,
+      });
+
       if (!user?.id || !organizationId) {
+        console.log("Missing user ID or organization ID");
         setLoading(false);
         return;
       }
@@ -91,17 +103,24 @@ const useGetVoters = (organizationId: string) => {
         setError(null);
 
         try {
-          const response = await axios.get("/api/voters", {
+          console.log("Making API request...");
+          const response = await api.get("/api/voters", {
             headers: { organizationId },
           });
+
+          console.log("API Response:", response.data);
 
           const voters = response.data || [];
           voterStore.setVoters(voters);
           setVoters(voters);
           initialized.current = true;
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error fetching voters:", error);
-          setError("Failed to fetch voters. Please try again later.");
+          if (error.response?.status === 401) {
+            window.location.href = "/sign-in";
+            return;
+          }
+          setError(error.response?.data?.error || "Failed to fetch voters");
           setVoters([]);
         } finally {
           setLoading(false);
