@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
 import { Department } from "@prisma/client";
 import { toast } from "sonner";
 
 type Listener = () => void;
+type DepartmentWithFullPath = Department & { fullPath: string };
 
 const departmentStore = {
   listeners: new Set<Listener>(),
@@ -50,6 +51,35 @@ const useGetDepartments = (organizationId: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const getDepartmentPath = (
+    deptId: string,
+    deps = new Set<string>()
+  ): string => {
+    if (deps.has(deptId)) return ""; 
+    deps.add(deptId);
+
+    const dept = departments.find((d) => d.id === deptId);
+    if (!dept) return "";
+
+    if (!dept.parentId) return dept.name;
+
+    const parentPath = getDepartmentPath(dept.parentId, deps);
+    return parentPath ? `${parentPath} - ${dept.name}` : dept.name;
+  };
+
+  const departmentsWithPaths = useMemo(() => {
+    return departments.map((dept) => ({
+      ...dept,
+      fullPath: getDepartmentPath(dept.id),
+    }));
+  }, [departments]);
+
+  const sortedDepartments = useMemo(() => {
+    return [...departmentsWithPaths].sort((a, b) =>
+      a.fullPath.localeCompare(b.fullPath)
+    );
+  }, [departmentsWithPaths]);
+
   useEffect(() => {
     const fetchDepartments = async () => {
       setLoading(true);
@@ -87,7 +117,6 @@ const useGetDepartments = (organizationId: string) => {
 
   const handleNewDepartment = async (newDep: Department) => {
     try {
-      console.log("Department being sent to API:", newDep); 
       const response = await axios.post("/api/department", {
         name: newDep.name,
         parentId: newDep.parentId,
@@ -97,7 +126,6 @@ const useGetDepartments = (organizationId: string) => {
       departmentStore.addDepartment(createdDep);
 
       toast.success("Department created successfully");
-
       return createdDep;
     } catch (error) {
       console.error("Error creating department:", error);
@@ -192,7 +220,7 @@ const useGetDepartments = (organizationId: string) => {
   };
 
   return {
-    departments,
+    departments: sortedDepartments,
     loading,
     error,
     handleNewDepartment,

@@ -271,30 +271,6 @@ export default function AddMembersDialog({
     setMembers(members.filter((m) => m.email !== email));
   };
 
-  const getDepartmentPath = (
-    deptId: string,
-    deps = new Set<string>()
-  ): string => {
-    if (deps.has(deptId)) return ""; 
-    deps.add(deptId);
-
-    const dept = departments.find((d) => d.id === deptId);
-    if (!dept) return "";
-
-    if (!dept.parentId) return dept.name;
-
-    const parentPath = getDepartmentPath(dept.parentId, deps);
-    return `${parentPath} - ${dept.name}`;
-  };
-
-  const sortedDepartments = React.useMemo(() => {
-    return [...departments].sort((a, b) => {
-      const pathA = getDepartmentPath(a.id);
-      const pathB = getDepartmentPath(b.id);
-      return pathA.localeCompare(pathB);
-    });
-  }, [departments]);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -365,9 +341,9 @@ export default function AddMembersDialog({
                     <SelectValue placeholder="Select Department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {sortedDepartments.map((dept) => (
+                    {departments.map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
-                        {getDepartmentPath(dept.id)}
+                        {dept.fullPath}
                       </SelectItem>
                     ))}
                   </SelectContent>
