@@ -34,11 +34,12 @@ import axios from "axios";
 interface NewVotingDialogProps {
   label: string;
   onVoteCreated?: () => void; 
+  departmentId?: string;
 }
 
 const RequiredIndicator = () => <span className="text-red-500 ml-1">*</span>;
 
-const NewVotingDialog = ({ label, onVoteCreated }: NewVotingDialogProps) => {
+const NewVotingDialog = ({ label, onVoteCreated, departmentId }: NewVotingDialogProps) => {
   const { selectedOrgId } = useSelectedOrganization();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
@@ -166,6 +167,7 @@ const handleSubmit = async () => {
                 <CandidateSelection
                   value={selectedCandidates}
                   onChange={setSelectedCandidates}
+                  departmentId={departmentId}
                 />
               </div>
             </div>

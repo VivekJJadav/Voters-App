@@ -4,6 +4,7 @@ import { PlusIcon } from "lucide-react";
 import NewDepartmentDialog from "./NewDepartmentDialog";
 import { Department } from "@prisma/client";
 import useGetDepartments from "@/app/actions/useGetDepartments";
+import NewVotingDialog from "./NewVotingDialog";
 
 interface DepartmentListProps {
   departments: Department[];
@@ -103,9 +104,7 @@ const DepartmentList = ({
                 </h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button className="bg-green-600 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2">
-                  Create a vote
-                </Button>
+                <NewVotingDialog label="Create Vote" departmentId={department.id}/>
                 <Button
                   className="bg-blue-500 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
                   onClick={() => handleDepartment(department.id)}

@@ -21,7 +21,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   const { departments, handleNewDepartment, handleDeleteDepartment, loading } =
     useGetDepartments(orgId);
 
-  const { voters } = useGetVoters(orgId);
+  const { voters, votersLoading } = useGetVoters(orgId);
 
   const currentOrg = organizations.find((org) => org.id === orgId);
 
@@ -94,7 +94,11 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 mt-3">
             Members
           </h2>
-          {voters.length === 0 ? (
+          {votersLoading ? (
+            <div className="flex justify-center py-4">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : voters.length === 0 ? (
             <p className="text-sm sm:text-base text-gray-500">
               No members in this organization yet.
             </p>
@@ -155,7 +159,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             )}
           </div>
         ) : (
-          <div className="text-sm sm:text-base">
+          <div className="flex justify-center py-4">
             <LoadingSpinner size="sm" />
           </div>
         )}

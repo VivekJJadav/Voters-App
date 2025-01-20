@@ -49,6 +49,11 @@ export const voterStore = {
     this.notify();
   },
 
+  clearVoters() {
+    this.voters = [];
+    this.notify();
+  },
+
   updateVoter(updatedVoter: VoterWithRelations) {
     const index = this.voters.findIndex(
       (voter) => voter.id === updatedVoter.id
@@ -68,14 +73,16 @@ export const voterStore = {
 const useGetVoters = (organizationId: string) => {
   const user = useAuthStore((state) => state.user);
   const [voters, setVoters] = useState<VoterWithRelations[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [votersLoading, setVotersLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const initialized = useRef(false);
   const prevOrgId = useRef(organizationId);
 
   useEffect(() => {
     if (prevOrgId.current !== organizationId) {
-      initialized.current = false;
+      setVoters([]);
+      voterStore.clearVoters();
+      setVotersLoading(true);
       prevOrgId.current = organizationId;
     }
 
@@ -94,12 +101,12 @@ const useGetVoters = (organizationId: string) => {
 
       if (!user?.id || !organizationId) {
         console.log("Missing user ID or organization ID");
-        setLoading(false);
+        setVotersLoading(false);
         return;
       }
 
       if (!initialized.current) {
-        setLoading(true);
+        setVotersLoading(true);
         setError(null);
 
         try {
@@ -123,7 +130,7 @@ const useGetVoters = (organizationId: string) => {
           setError(error.response?.data?.error || "Failed to fetch voters");
           setVoters([]);
         } finally {
-          setLoading(false);
+          setVotersLoading(false);
         }
       }
     };
@@ -140,10 +147,8 @@ const useGetVoters = (organizationId: string) => {
       });
     });
 
-    // Subscribe to auth store changes
     const unsubscribeAuth = useAuthStore.subscribe((state) => {
       if (state.user && initialized.current) {
-        // Force refresh when user data changes
         initialized.current = false;
         fetchVoters();
       }
@@ -231,7 +236,7 @@ const useGetVoters = (organizationId: string) => {
 
   return {
     voters,
-    loading,
+    votersLoading,
     error,
     handleAddVoter,
     handleRemoveVoter,

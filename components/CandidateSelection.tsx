@@ -17,15 +17,27 @@ import { User } from "@prisma/client";
 interface CandidateSelectionProps {
   value: User[];
   onChange: (users: User[]) => void;
+  departmentId?: string;
 }
 
-const CandidateSelection = ({ value, onChange }: CandidateSelectionProps) => {
+const CandidateSelection = ({
+  value,
+  onChange,
+  departmentId,
+}: CandidateSelectionProps) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
 
   const { selectedOrgId } = useSelectedOrganization();
   const { voters } = useGetVoters(selectedOrgId || "");
+
+  const filteredVoters = React.useMemo(() => {
+    if (!departmentId) return voters;
+    return voters.filter((voter) =>
+      voter.departments?.some((department) => department.id === departmentId)
+    );
+  }, [voters, departmentId]);
 
   const handleUnselect = React.useCallback(
     (voter: User) => {
@@ -51,9 +63,17 @@ const CandidateSelection = ({ value, onChange }: CandidateSelectionProps) => {
     [onChange, value]
   );
 
-  const selectables = voters.filter(
+  const selectables = filteredVoters.filter(
     (voter) => !value.some((s) => s.id === voter.id)
   );
+
+  const getPlaceholderText = () => {
+    if (voters.length === 0) return "Please select organization";
+    if (departmentId && filteredVoters.length === 0)
+      return "Please add members to department";
+    if (departmentId) return "Select candidates from department...";
+    return "Select candidates...";
+  };
 
   return (
     <Command
@@ -90,11 +110,7 @@ const CandidateSelection = ({ value, onChange }: CandidateSelectionProps) => {
             onValueChange={setInputValue}
             onBlur={() => setOpen(false)}
             onFocus={() => setOpen(true)}
-            placeholder={
-              voters.length === 0
-                ? "Please select organization"
-                : "Select candidates..."
-            }
+            placeholder={getPlaceholderText()}
             className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
           />
         </div>
