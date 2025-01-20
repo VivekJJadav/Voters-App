@@ -36,6 +36,7 @@ export const SignUpCard = () => {
       name: searchParams.get("name") || "",
       email: searchParams.get("email") || "",
       organizationId: searchParams.get("organizationId") || "",
+      departmentId: searchParams.get("departmentId") || "",
       password: "",
     },
   });
@@ -45,6 +46,7 @@ export const SignUpCard = () => {
     email: string;
     password: string;
     organizationId?: string;
+    departmentId?: string;
   }) => {
     setLoading(true);
     try {
