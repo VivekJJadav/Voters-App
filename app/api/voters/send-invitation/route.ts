@@ -17,7 +17,6 @@ export async function POST(request: Request) {
     const { emails, names, organizationId, departmentId } =
       await request.json();
 
-    // Only check for required fields, removing departmentId from validation
     if (!emails?.length || !names?.length || !organizationId) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -25,7 +24,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Modify Promise.all to handle optional department
     const [organization, department] = await Promise.all([
       client.organization.findUnique({
         where: { id: organizationId },
@@ -45,7 +43,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Remove department check since it's optional
 
     const results: SendInvitationResult[] = [];
 
@@ -59,7 +56,6 @@ export async function POST(request: Request) {
         });
         const redirectPath = existingUser ? "sign-in" : "sign-up";
 
-        // Construct URL parameters without departmentId if it's not provided
         const urlParams = new URLSearchParams({
           email: email,
           name: name,
