@@ -35,6 +35,7 @@ const Organization = () => {
               <SelectorForm
                 values={organizations}
                 placeholder="Select an organization"
+                loading={loading}
               />
             </div>
           </div>

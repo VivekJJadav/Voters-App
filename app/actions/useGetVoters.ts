@@ -94,13 +94,7 @@ const useGetVoters = (organizationId: string) => {
     });
 
     const fetchVoters = async () => {
-      console.log("Fetching voters with:", {
-        userId: user?.id,
-        organizationId,
-      });
-
       if (!user?.id || !organizationId) {
-        console.log("Missing user ID or organization ID");
         setVotersLoading(false);
         return;
       }
@@ -110,12 +104,10 @@ const useGetVoters = (organizationId: string) => {
         setError(null);
 
         try {
-          console.log("Making API request...");
           const response = await api.get("/api/voters", {
             headers: { organizationId },
           });
 
-          console.log("API Response:", response.data);
 
           const voters = response.data || [];
           voterStore.setVoters(voters);

@@ -8,9 +8,10 @@ import useGetVotes from "@/app/actions/useGetVotes";
 import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 import Votes from "../components/Votes";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import useGetUserMemberships from "@/app/actions/useGetUserMemberships";
 
 const Vote = () => {
-  const { organizations } = useGetOrganizations();
+  const { organizations, organizationsLoading } = useGetUserMemberships();
 
   const { selectedOrgId } = useSelectedOrganization();
 
@@ -27,6 +28,7 @@ const Vote = () => {
         <SelectorForm
           values={organizations}
           placeholder="Select a organization"
+          loading={organizationsLoading}
         />
       </div>
       <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap gap-4">

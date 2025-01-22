@@ -15,13 +15,6 @@ export async function POST(req: Request) {
       body.organizationId || searchParams.get("organizationId");
     const departmentId = body.departmentId || searchParams.get("departmentId");
 
-    console.log("Registration data:", {
-      name,
-      email,
-      organizationId,
-      departmentId, 
-    });
-
     if (!name || !email || !password) {
       return NextResponse.json(
         { message: "Missing required fields" },
@@ -76,11 +69,6 @@ export async function POST(req: Request) {
             });
 
           if (!existingDepartmentMembership) {
-            console.log("Creating department membership for existing user:", {
-              userId: existingUser.id,
-              departmentId,
-            });
-
             await tx.userDepartment.create({
               data: {
                 userId: existingUser.id,
@@ -115,11 +103,6 @@ export async function POST(req: Request) {
         }
 
         if (departmentId) {
-          console.log("Creating department membership for new user:", {
-            userId: user.id,
-            departmentId,
-          });
-
           await tx.userDepartment.create({
             data: {
               userId: user.id,

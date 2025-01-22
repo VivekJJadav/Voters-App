@@ -16,13 +16,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface SelectorProps {
   placeholder?: string;
   values: { id: string; name: string }[];
+  loading?: boolean;
 }
 
-const SelectorForm = ({ placeholder, values }: SelectorProps) => {
+const SelectorForm = ({ placeholder, values, loading }: SelectorProps) => {
   const { setSelectedOrgId } = useSelectedOrganization();
 
   const form = useForm<{ selectedOrganization: string }>({
@@ -43,10 +45,10 @@ const SelectorForm = ({ placeholder, values }: SelectorProps) => {
             <FormItem>
               <Select
                 onValueChange={(value) => {
-                  field.onChange(value); 
+                  field.onChange(value);
                   form.handleSubmit((data) => {
-                    onSubmit(data); 
-                    form.reset({ selectedOrganization: "" }); 
+                    onSubmit(data);
+                    form.reset({ selectedOrganization: "" });
                   })();
                 }}
               >
@@ -58,11 +60,15 @@ const SelectorForm = ({ placeholder, values }: SelectorProps) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {values.map((value) => (
-                    <SelectItem key={value.id} value={value.id}>
-                      {value.name}
-                    </SelectItem>
-                  ))}
+                  {loading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    values.map((value) => (
+                      <SelectItem key={value.id} value={value.id}>
+                        {value.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />

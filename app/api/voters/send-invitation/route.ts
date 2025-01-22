@@ -1,15 +1,19 @@
+import nodemailer from "nodemailer";
+import { NextResponse } from "next/server";
+import client from "@/app/libs/prismadb";
+
 interface SendInvitationResult {
   email: string;
   success: boolean;
   error?: string;
 }
 
-import { NextResponse } from "next/server";
-import { MailerSend, EmailParams } from "mailersend";
-import client from "@/app/libs/prismadb";
-
-const mailersend = new MailerSend({
-  apiKey: process.env.MAILERSEND_API_KEY!,
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "thevoters001@gmail.com", 
+    pass: process.env.GMAIL_APP_PASSWORD, 
+  },
 });
 
 export async function POST(request: Request) {
@@ -43,7 +47,6 @@ export async function POST(request: Request) {
       );
     }
 
-
     const results: SendInvitationResult[] = [];
 
     for (let i = 0; i < emails.length; i++) {
@@ -67,46 +70,34 @@ export async function POST(request: Request) {
           process.env.NEXT_PUBLIC_APP_URL
         }/${redirectPath}?${urlParams.toString()}`;
 
-        const emailData = new EmailParams()
-          .setFrom({
-            email: process.env.MAILERSEND_FROM_EMAIL!,
-            name: process.env.MAILERSEND_FROM_NAME || organization.name,
-          })
-          .setTo([{ email, name }])
-          .setSubject(
-            existingUser
-              ? `Sign in to join ${organization.name}`
-              : "Complete your registration"
-          )
-          .setHtml(
-            `
-            <div>
-              <p>${
-                existingUser
-                  ? `Sign in to join ${organization.name}${
-                      department ? ` in the ${department.name} department` : ""
-                    }`
-                  : `Accept the invitation to join ${organization.name}${
-                      department ? ` in the ${department.name} department` : ""
-                    }!`
-              }</p>
-              <a href="${link}" style="background: #4CAF50; color: white; padding: 14px 20px; text-decoration: none; border-radius: 4px;">
-                ${existingUser ? "Sign In" : "Sign Up"}
-              </a>
-            </div>
-          `
-          )
-          .setText(
+        await transporter.sendMail({
+          from: "thevoters001@gmail.com", 
+          to: email,
+          subject: existingUser
+            ? `Sign in to join ${organization.name}`
+            : "Complete your registration",
+          html: `<div>
+          <p>${
             existingUser
               ? `Sign in to join ${organization.name}${
                   department ? ` in the ${department.name} department` : ""
-                }: ${link}`
+                }`
               : `Accept the invitation to join ${organization.name}${
                   department ? ` in the ${department.name} department` : ""
-                }! ${link}`
-          );
-
-        await mailersend.email.send(emailData);
+                }!`
+          }</p>
+          <a href="${link}" style="background: #4CAF50; color: white; padding: 14px 20px; text-decoration: none; border-radius: 4px;">
+            ${existingUser ? "Sign In" : "Sign Up"}
+          </a>
+        </div>`,
+          text: existingUser
+            ? `Sign in to join ${organization.name}${
+                department ? ` in the ${department.name} department` : ""
+              }: ${link}`
+            : `Accept the invitation to join ${organization.name}${
+                department ? ` in the ${department.name} department` : ""
+              }! ${link}`,
+        });
 
         if (existingUser && departmentId) {
           await client.userDepartment.create({

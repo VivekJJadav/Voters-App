@@ -49,7 +49,6 @@ export async function POST(request: Request) {
           });
 
           if (!existingMembership) {
-            console.log("Creating new organization membership");
             await tx.organizationMember.create({
               data: {
                 userId: user.id,
@@ -70,7 +69,6 @@ export async function POST(request: Request) {
             });
 
           if (!existingDepartmentMembership) {
-            console.log("Creating new department membership");
             await tx.userDepartment.create({
               data: {
                 userId: user.id,
