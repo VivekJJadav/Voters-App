@@ -62,6 +62,8 @@ const SelectorForm = ({ placeholder, values, loading }: SelectorProps) => {
                 <SelectContent>
                   {loading ? (
                     <LoadingSpinner size="sm" />
+                  ) : values.length === 0 ? (
+                    <p className="text-sm">No result found.</p>
                   ) : (
                     values.map((value) => (
                       <SelectItem key={value.id} value={value.id}>
