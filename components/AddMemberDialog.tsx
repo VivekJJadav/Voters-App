@@ -202,7 +202,12 @@ export default function AddMembersDialog({
       return;
     }
 
-    const validatedMember = await validateMember(manualEntry);
+    const memberWithDepartment = {
+      ...manualEntry,
+      department: selectedDepartment,
+    };
+
+    const validatedMember = await validateMember(memberWithDepartment);
 
     if (!validatedMember.isValid) {
       setError(validatedMember.error || "Invalid member data");
@@ -407,13 +412,10 @@ export default function AddMembersDialog({
                     />
                     <span className="text-sm">
                       {member.name} ({member.email})
+                      {" -> "}
                       {member.department &&
                         departments.find((d) => d.id === member.department)
-                          ?.name &&
-                        ` - ${
-                          departments.find((d) => d.id === member.department)
-                            ?.name
-                        }`}
+                          ?.fullPath}
                     </span>
                   </div>
                   <Button

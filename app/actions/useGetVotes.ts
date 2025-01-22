@@ -14,7 +14,7 @@ interface VoteData {
   voteType: string;
 }
 
-interface UseVotesResult {
+interface UseVotesProps {
   votes: Vote[];
   loading: boolean;
   error: string | null;
@@ -24,7 +24,7 @@ interface UseVotesResult {
   refreshVotes: () => Promise<void>;
 }
 
-const useVotes = (organizationId: string): UseVotesResult => {
+const useVotes = (organizationId: string): UseVotesProps => {
   const user = useAuthStore((state) => state.user);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [loading, setLoading] = useState(true);

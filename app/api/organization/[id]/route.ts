@@ -17,13 +17,13 @@ export async function GET(
   try {
     const organizations = await client.organization.findMany({
       where: { creatorId: id },
-      //   orderBy: {
-      //     createdAt: 'desc'  // Show newest first
-      //   },
+        orderBy: {
+          createdAt: 'desc'  
+        },
       select: {
         id: true,
         name: true,
-        // createdAt: true,
+        createdAt: true,
         votes: true,
         departments: true,
       },

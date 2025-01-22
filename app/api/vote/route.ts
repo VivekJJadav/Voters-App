@@ -12,6 +12,7 @@ export async function POST(request: Request) {
       isAnonymous,
       voteType,
       organizationId,
+      departmentId
     } = await request.json();
 
     if (!name || !description || !organizationId || !candidates) {
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
         isAnonymous: isAnonymous || false,
         voteType: voteType || "SINGLE_CHOICE",
         organizationId,
+        departmentId,
         candidates: {
           create: candidates.map((candidate: { userId: string }) => ({
             userId: candidate.userId,

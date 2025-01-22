@@ -30,16 +30,23 @@ import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 import { toast } from "sonner";
 import { User } from "@prisma/client";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 interface NewVotingDialogProps {
   label: string;
-  onVoteCreated?: () => void; 
+  onVoteCreated?: () => void;
   departmentId?: string;
 }
 
 const RequiredIndicator = () => <span className="text-red-500 ml-1">*</span>;
 
-const NewVotingDialog = ({ label, onVoteCreated, departmentId }: NewVotingDialogProps) => {
+const NewVotingDialog = ({
+  label,
+  onVoteCreated,
+  departmentId,
+}: NewVotingDialogProps) => {
+  const router = useRouter();
+
   const { selectedOrgId } = useSelectedOrganization();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
@@ -51,58 +58,64 @@ const NewVotingDialog = ({ label, onVoteCreated, departmentId }: NewVotingDialog
   const [selectedCandidates, setSelectedCandidates] = useState<User[]>([]);
   const [open, setOpen] = useState(false);
 
-const handleSubmit = async () => {
-  if (!selectedOrgId) {
-    toast.error("Please select an organization first");
-    return;
-  }
-
-  if (!name || !description || selectedCandidates.length === 0) {
-    toast.error("Please fill in all required fields");
-    return;
-  }
-
-  if (startDate >= endDate) {
-    toast.error("End date must be after start date");
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-
-    const candidateData = selectedCandidates.map((candidate) => ({
-      userId: candidate.id,
-      name: candidate.name,
-    }));
-
-    const response = await axios.post("/api/vote", {
-      name,
-      description,
-      candidates: candidateData,
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
-      isAnonymous,
-      voteType: votingType,
-      organizationId: selectedOrgId,
-    });
-
-    if (response.status !== 201) {
-      throw new Error(response.data.details || "Failed to create vote");
+  const handleSubmit = async () => {
+    if (!selectedOrgId) {
+      toast.error("Please select an organization first");
+      return;
     }
 
-    toast.success("Vote created successfully");
-    setOpen(false);
-    resetForm();
+    if (!name || !description || selectedCandidates.length === 0) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
 
-    onVoteCreated?.();
-  } catch (error) {
-    toast.error(
-      error instanceof Error ? error.message : "Failed to create vote"
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
+    if (startDate >= endDate) {
+      toast.error("End date must be after start date");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const candidateData = selectedCandidates.map((candidate) => ({
+        userId: candidate.id,
+        name: candidate.name,
+      }));
+
+      const response = await axios.post("/api/vote", {
+        name,
+        description,
+        candidates: candidateData,
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString(),
+        isAnonymous,
+        voteType: votingType,
+        organizationId: selectedOrgId,
+        ...(departmentId && { departmentId })
+      });
+
+      if (response.status !== 201) {
+        throw new Error(response.data.details || "Failed to create vote");
+      }
+
+      toast.success("Vote created successfully");
+      setOpen(false);
+      resetForm();
+
+      if (onVoteCreated) {
+        onVoteCreated();
+      }
+
+      router.refresh();
+      router.push("/vote");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create vote"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setName("");

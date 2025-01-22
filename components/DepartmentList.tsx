@@ -5,6 +5,7 @@ import NewDepartmentDialog from "./NewDepartmentDialog";
 import { Department } from "@prisma/client";
 import useGetDepartments from "@/app/actions/useGetDepartments";
 import NewVotingDialog from "./NewVotingDialog";
+import { MdOutlineDelete } from "react-icons/md";
 
 interface DepartmentListProps {
   departments: Department[];
@@ -104,7 +105,10 @@ const DepartmentList = ({
                 </h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                <NewVotingDialog label="Create Vote" departmentId={department.id}/>
+                <NewVotingDialog
+                  label="Create Vote"
+                  departmentId={department.id}
+                />
                 <Button
                   className="bg-blue-500 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
                   onClick={() => handleDepartment(department.id)}
@@ -115,7 +119,7 @@ const DepartmentList = ({
                   className="bg-red-500 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
                   onClick={() => handleDeleteDepartment(department.id)}
                 >
-                  Delete
+                  <MdOutlineDelete />
                 </Button>
               </div>
             </div>
