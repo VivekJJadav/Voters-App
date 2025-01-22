@@ -7,7 +7,12 @@ import { cn } from "@/lib/utils";
 import { useMedia } from "react-use";
 import { Button } from "@/components/ui/button";
 import NavButton from "./NavButton";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useState } from "react";
 import NotificationDropdown from "./NotificationDropdown";
 import useAuthStore from "@/store/authStore";
@@ -40,7 +45,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMedia("(max-width: 1024px)", false);
 
-  const user  = useAuthStore((state) => state.user) as User;
+  const user = useAuthStore((state) => state.user) as User;
 
   const logout = useAuthStore((state) => state.logout);
 
@@ -113,7 +118,7 @@ const Navbar = () => {
           </div>
         )}
         <div className="flex absolute right-4 gap-2">
-          <div className="w-8 h-8 bg-transparent border-[1px] rounded-sm border-blue-500 hover:border-black/40 flex items-center justify-center mt-[1px]">
+          <div className="w-8 h-8 bg-transparent border-[1px] rounded-sm border-blue-500 hover:border-cyan-950/40 flex items-center justify-center mt-[1px]">
             <NotificationDropdown />
           </div>
           {user && <Button onClick={handleLogout}>Log out</Button>}
