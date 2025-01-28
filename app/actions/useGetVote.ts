@@ -1,24 +1,56 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
-import { Vote, VoteCandidate } from "@prisma/client";
+import {
+  Department,
+  Prisma,
+  Slogan,
+  Vote,
+  VoteCandidate,
+  VoteResult,
+  VoteType,
+} from "@prisma/client";
 import { toast } from "sonner";
 
+const voteWithRelations = Prisma.validator<Prisma.VoteArgs>()({
+  include: {
+    candidates: {
+      include: {
+        user: true,
+      },
+    },
+    results: {
+      include: {
+        candidate: true,
+      },
+    },
+    slogans: {
+      include: {
+        user: true,
+      },
+    },
+    organization: true,
+    department: true,
+  },
+});
+
+type VoteWithRelations = Prisma.VoteGetPayload<typeof voteWithRelations>;
+
 interface UseGetVoteProps {
-  vote: Vote | null;
+  vote: VoteWithRelations | null;
   loading: boolean;
   error: string | null;
   refreshVote: () => Promise<void>;
 }
 
-const useGetVote = (voteId: string): UseGetVoteProps => {
+const useGetVote = (voteId: string | undefined): UseGetVoteProps => {
   const user = useAuthStore((state) => state.user);
-  const [vote, setVote] = useState<Vote | null>(null);
+  const [vote, setVote] = useState<VoteWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchVote = useCallback(async () => {
-    if (!user?.id || !voteId) {
+    if (!user || !voteId) {
       setLoading(false);
       return;
     }
@@ -27,29 +59,36 @@ const useGetVote = (voteId: string): UseGetVoteProps => {
     setError(null);
 
     try {
-      const response = await axios.get(`/api/vote/${voteId}`);
+      const response = await axios.get<VoteWithRelations>(`/api/vote/${voteId}`, {
+        headers: { userId: user.id },
+      });
       setVote(response.data);
     } catch (err) {
       console.error("Error fetching vote:", err);
-      setError("Failed to fetch vote details. Please try again later.");
+      const errorMessage =
+        axios.isAxiosError(err) && err.response?.status === 404
+          ? "Vote not found"
+          : "Failed to fetch vote details. Please try again later.";
+
+      setError(errorMessage);
       setVote(null);
-      toast.error("Failed to load vote details");
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [user?.id, voteId]);
+  }, [user, voteId]);
 
   useEffect(() => {
     fetchVote();
 
-    const unsubscribeAuth = useAuthStore.subscribe((state) => {
+    const unsubscribe = useAuthStore.subscribe((state) => {
       if (state.user) {
         fetchVote();
       }
     });
 
     return () => {
-      unsubscribeAuth();
+      unsubscribe();
     };
   }, [fetchVote]);
 

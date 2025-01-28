@@ -14,7 +14,7 @@ interface VoteData {
   voteType: string;
 }
 
-interface UseVotesProps {
+interface UseGetVotesProps {
   votes: Vote[];
   loading: boolean;
   error: string | null;
@@ -24,7 +24,7 @@ interface UseVotesProps {
   refreshVotes: () => Promise<void>;
 }
 
-const useVotes = (organizationId: string): UseVotesProps => {
+const useGetVotes = (organizationId: string): UseGetVotesProps => {
   const user = useAuthStore((state) => state.user);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ const useVotes = (organizationId: string): UseVotesProps => {
 
     try {
       const response = await axios.get("/api/vote", {
-        headers: { organizationId },
+        headers: { organizationId, userId: user.id },
       });
       setVotes(response.data || []);
     } catch (err) {
@@ -65,7 +65,7 @@ const useVotes = (organizationId: string): UseVotesProps => {
     return () => {
       unsubscribeAuth();
     };
-  }, [fetchVotes]);
+  }, [fetchVotes, organizationId]);
 
   const createVote = async (voteData: VoteData): Promise<Vote> => {
     try {
@@ -141,4 +141,4 @@ const useVotes = (organizationId: string): UseVotesProps => {
   };
 };
 
-export default useVotes;
+export default useGetVotes;

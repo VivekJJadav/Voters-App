@@ -16,11 +16,21 @@ export const SelectedOrganizationProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("selectedOrgId");
+    }
+    return null;
+  });
+
+  const setSelectedOrgIdWithStorage = (id: string) => {
+    setSelectedOrgId(id);
+    localStorage.setItem("selectedOrgId", id);
+  };
 
   return (
     <SelectedOrganizationContext.Provider
-      value={{ selectedOrgId, setSelectedOrgId }}
+      value={{ selectedOrgId, setSelectedOrgId: setSelectedOrgIdWithStorage }}
     >
       {children}
     </SelectedOrganizationContext.Provider>

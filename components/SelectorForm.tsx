@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Select,
   SelectContent,
@@ -17,41 +15,53 @@ import {
 } from "@/components/ui/form";
 import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 import LoadingSpinner from "./LoadingSpinner";
+import { useCallback } from "react";
 
 interface SelectorProps {
   placeholder?: string;
   values: { id: string; name: string }[];
   loading?: boolean;
+  value?: string | null;
+  onChange?: (value: string) => void;
 }
 
-const SelectorForm = ({ placeholder, values, loading }: SelectorProps) => {
+const SelectorForm = ({
+  placeholder,
+  values,
+  loading,
+  value,
+  onChange,
+}: SelectorProps) => {
   const { setSelectedOrgId } = useSelectedOrganization();
 
   const form = useForm<{ selectedOrganization: string }>({
-    defaultValues: { selectedOrganization: "" },
+    defaultValues: {
+      selectedOrganization: value || "",
+    },
   });
 
-  const onSubmit = (data: { selectedOrganization: string }) => {
-    setSelectedOrgId(data.selectedOrganization);
-  };
+  const handleValueChange = useCallback(
+    (newValue: string) => {
+      if (newValue) {
+        setSelectedOrgId(newValue);
+        onChange?.(newValue);
+      }
+    },
+    [setSelectedOrgId, onChange]
+  );
+
+  const currentValue =
+    value && values.some((org) => org.id === value) ? value : undefined;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6">
+      <form className="w-full space-y-6">
         <FormField
           control={form.control}
           name="selectedOrganization"
           render={({ field }) => (
             <FormItem>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  form.handleSubmit((data) => {
-                    onSubmit(data);
-                    form.reset({ selectedOrganization: "" });
-                  })();
-                }}
-              >
+              <Select value={currentValue} onValueChange={handleValueChange}>
                 <FormControl>
                   <SelectTrigger className="text-black bg-white/50 border-blue-600 rounded-lg w-56">
                     <SelectValue
@@ -61,9 +71,11 @@ const SelectorForm = ({ placeholder, values, loading }: SelectorProps) => {
                 </FormControl>
                 <SelectContent>
                   {loading ? (
-                    <LoadingSpinner size="sm" />
+                    <div className="flex justify-center p-2">
+                      <LoadingSpinner size="sm" />
+                    </div>
                   ) : values.length === 0 ? (
-                    <p className="text-sm">No result found.</p>
+                    <p className="text-sm p-2">No result found.</p>
                   ) : (
                     values.map((value) => (
                       <SelectItem key={value.id} value={value.id}>

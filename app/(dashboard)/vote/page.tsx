@@ -1,9 +1,7 @@
 "use client";
 
-import NewOrganizationDialog from "@/components/NewOrganizationDialog";
-import NewVotingDialog from "@/components/NewVotingDialog";
+import { useEffect, useMemo } from "react";
 import SelectorForm from "@/components/SelectorForm";
-import useGetOrganizations from "@/app/actions/useGetOrganizations";
 import useGetVotes from "@/app/actions/useGetVotes";
 import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 import Votes from "../components/Votes";
@@ -12,28 +10,55 @@ import useGetUserMemberships from "@/app/actions/useGetUserMemberships";
 
 const Vote = () => {
   const { organizations, organizationsLoading } = useGetUserMemberships();
+  const { selectedOrgId, setSelectedOrgId } = useSelectedOrganization();
 
-  const { selectedOrgId } = useSelectedOrganization();
+  const validOrganizationId = useMemo(() => {
+    if (!organizations?.length) return undefined;
+    if (
+      selectedOrgId &&
+      organizations.some((org) => org.id === selectedOrgId)
+    ) {
+      return selectedOrgId;
+    }
+    return organizations[0].id;
+  }, [organizations, selectedOrgId]);
 
-  const { votes, loading } = useGetVotes(selectedOrgId || "");
+  useEffect(() => {
+    if (
+      !organizationsLoading &&
+      organizations?.length > 0 &&
+      validOrganizationId
+    ) {
+      if (validOrganizationId !== selectedOrgId) {
+        setSelectedOrgId(validOrganizationId);
+      }
+    }
+  }, [
+    organizations,
+    organizationsLoading,
+    validOrganizationId,
+    selectedOrgId,
+    setSelectedOrgId,
+  ]);
+
+  const { votes, loading: votesLoading } = useGetVotes(selectedOrgId || "");
 
   return (
     <div className="flex flex-col">
       <div className="py-2 px-2 mt-28 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white">
-        {/* <NewVotingDialog
-          label="Create your own voting"
-          onVoteCreated={refreshVotes}
-        /> */}
-        {/* <NewOrganizationDialog label="Create new organization" /> */}
         <SelectorForm
           values={organizations}
           placeholder="Select a organization"
           loading={organizationsLoading}
+          value={selectedOrgId}
+          onChange={(newValue) => {
+            setSelectedOrgId(newValue);
+          }}
         />
       </div>
       <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap gap-4">
-        {loading ? (
-          <div className="fixed inset-0 flex items-center justify-center">
+        {votesLoading ? (
+          <div className="h-screen w-full flex items-center justify-center">
             <LoadingSpinner size="lg" />
           </div>
         ) : votes.length === 0 ? (

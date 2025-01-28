@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       isAnonymous,
       voteType,
       organizationId,
-      departmentId
+      departmentId,
     } = await request.json();
 
     if (!name || !description || !organizationId || !candidates) {
@@ -81,11 +81,33 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const organizationId = request.headers.get("organizationId");
+    const userId = request.headers.get("userId"); 
 
     if (!organizationId) {
       return NextResponse.json(
         { error: "Organization ID is required" },
         { status: 400 }
+      );
+    }
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "User ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const membership = await client.organizationMember.findFirst({
+      where: {
+        userId: userId,
+        organizationId: organizationId,
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: "User is not a member of this organization" },
+        { status: 403 }
       );
     }
 

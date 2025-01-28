@@ -36,7 +36,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   if (!currentOrg) {
     return (
       <div className="flex items-center justify-center mt-48">
-        <LoadingSpinner size="md" />
+        <p>Please select organization.</p>
       </div>
     );
   }
@@ -90,7 +90,11 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             disabled={isLoading}
             className="sm:text-sm flex-1 sm:flex-none"
           >
-            {isLoading ? <MdOutlineDelete className="bg-red-500"/> : <MdOutlineDelete />}
+            {isLoading ? (
+              <MdOutlineDelete className="bg-red-500" />
+            ) : (
+              <MdOutlineDelete />
+            )}
           </Button>
         </div>
       </div>
