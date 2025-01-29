@@ -127,7 +127,7 @@ const NewDepartmentDialog = ({
           ref={triggerRef}
           className={cn(
             "text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base",
-            label === "Create a new department"
+            label === "Create a new Department"
               ? "inline-flex items-center justify-center"
               : "hidden"
           )}

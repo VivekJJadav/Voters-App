@@ -1,11 +1,12 @@
+"use client";
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import NewDepartmentDialog from "./NewDepartmentDialog";
 import { Department } from "@prisma/client";
 import useGetDepartments from "@/app/actions/useGetDepartments";
 import NewVotingDialog from "./NewVotingDialog";
-import { MdOutlineDelete } from "react-icons/md";
 
 interface DepartmentListProps {
   departments: Department[];
@@ -73,7 +74,7 @@ const DepartmentList = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <NewDepartmentDialog
         label="New Department"
         organizationId={organizationId}
@@ -83,52 +84,60 @@ const DepartmentList = ({
         parentId={selectedParentId}
       />
       {currentLevelDepartments.map((department) => (
-        <div key={department.id}>
+        <div key={department.id} className="group">
           <div
-            style={{ marginLeft: `${level * 1}rem` }}
-            className="p-2 sm:p-4 border-[1px] border-gray-400 rounded-lg bg-white shadow-sm"
+            style={{ marginLeft: `${level * 1.5}rem` }}
+            className="relative p-4 border border-gray-200 rounded-lg bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-300"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
                 {hasChildDepartments(department.id) ? (
                   <button
                     onClick={() => handleExpand(department.id)}
-                    className="w-6 h-6 flex items-center justify-center text-xs hover:bg-gray-100 rounded"
+                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
                   >
-                    {expanded[department.id] ? "▼" : "▶"}
+                    {expanded[department.id] ? (
+                      <ChevronDown className="w-4 h-4 text-gray-600" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    )}
                   </button>
                 ) : (
                   <div className="w-6 h-6" />
                 )}
-                <h3 className="font-medium text-gray-800 text-sm sm:text-base">
+                <h3 className="font-semibold text-gray-800">
                   {department.name}
                 </h3>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity duration-200">
                 <NewVotingDialog
                   label="Create Vote"
                   departmentId={department.id}
                 />
                 <Button
-                  className="bg-blue-500 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900 transition-colors duration-200"
                   onClick={() => handleDepartment(department.id)}
                 >
-                  <PlusIcon size={16} />
+                  <PlusIcon className="w-4 h-4" />
                 </Button>
                 <Button
-                  className="bg-red-500 text-xs sm:text-sm px-2 py-1 sm:px-4 sm:py-2"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white hover:bg-red-50 border-gray-200 text-red-600 hover:text-red-700 hover:border-red-200 transition-colors duration-200"
                   onClick={() => handleDeleteDepartment(department.id)}
                 >
-                  <MdOutlineDelete />
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </div>
           {hasChildDepartments(department.id) && (
             <div
-              className={`overflow-hidden transition-all duration-300 ${
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
                 expanded[department.id]
-                  ? "max-h-[1000px] opacity-100"
+                  ? "max-h-[2000px] opacity-100"
                   : "max-h-0 opacity-0"
               }`}
             >

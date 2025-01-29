@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { SelectedOrganizationProvider } from "@/context/SelectedOrganizationContext";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "The Voters",
@@ -17,7 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SelectedOrganizationProvider>{children}</SelectedOrganizationProvider>
+        <SelectedOrganizationProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </SelectedOrganizationProvider>
         <Toaster />
       </body>
     </html>
