@@ -9,9 +9,8 @@ import DepartmentTag from "./Department";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import NewVotingDialog from "@/components/NewVotingDialog";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { MdOutlineDelete } from "react-icons/md";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -35,8 +34,10 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   if (!currentOrg) {
     return (
-      <div className="flex items-center justify-center mt-48">
-        <p>Please select organization.</p>
+      <div className="flex items-center justify-center h-[80vh]">
+        <p className="text-neutral-500 text-lg">
+          Please select an organization
+        </p>
       </div>
     );
   }
@@ -60,9 +61,9 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   };
 
   return (
-    <div className="flex flex-col space-y-4 p-2 sm:p-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-        <div className="flex flex-wrap gap-2">
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="flex flex-wrap gap-3">
           <AddMembersDialog organizationId={orgId} />
           <NewDepartmentDialog
             label="Create a new department"
@@ -72,77 +73,78 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           />
         </div>
 
-        <div className="text-center text-base sm:text-lg font-medium text-gray-700 my-2 sm:my-0">
+        <h1 className="text-2xl font-semibold text-neutral-800">
           {currentOrg.name}
-        </div>
+        </h1>
 
-        <div className="flex space-x-2">
-          <NewVotingDialog label="create a vote" onVoteCreated={refreshVotes} />
+        <div className="flex items-center gap-3">
+          <NewVotingDialog label="Create a vote" onVoteCreated={refreshVotes} />
           <Button
             variant="outline"
-            className="text-xs sm:text-sm flex-1 sm:flex-none"
+            size="sm"
+            className="text-neutral-700 hover:text-neutral-900"
           >
+            <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
           <Button
-            variant="destructive"
+            variant="outline"
+            size="sm"
             onClick={() => onDelete(currentOrg.id)}
             disabled={isLoading}
-            className="sm:text-sm flex-1 sm:flex-none"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
           >
-            {isLoading ? (
-              <MdOutlineDelete className="bg-red-500" />
-            ) : (
-              <MdOutlineDelete />
-            )}
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
           </Button>
         </div>
       </div>
 
-      <div className="mt-2 sm:mt-4 p-3 sm:p-4 bg-gray-100 border border-gray-300 rounded-lg">
-        <div className="space-y-3 sm:space-y-4 border-b pb-4">
+      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div className="border-b border-neutral-200">
           <button
             onClick={() => setIsMembersExpanded(!isMembersExpanded)}
-            className="w-full flex items-center justify-between cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-all duration-200 ease-in-out"
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
           >
-            <h2 className="text-base sm:text-lg font-semibold">
+            <h2 className="text-lg font-semibold text-neutral-800">
               Members ({voters.length})
             </h2>
             <ChevronDown
-              className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${
+              className={`h-5 w-5 text-neutral-400 transform transition-transform duration-200 ${
                 isMembersExpanded ? "rotate-180" : ""
               }`}
             />
           </button>
 
           {isMembersExpanded && (
-            <div className="space-y-4 mt-4">
+            <div className="px-6 py-4 space-y-4">
               {votersLoading ? (
-                <div className="flex justify-center py-4">
+                <div className="flex justify-center py-8">
                   <LoadingSpinner size="sm" />
                 </div>
               ) : voters.length === 0 ? (
-                <p className="text-sm sm:text-base text-gray-500 text-center">
+                <p className="text-center text-neutral-500 py-8">
                   No members in this organization yet.
                 </p>
               ) : (
-                <div className="grid gap-2 sm:gap-3">
-                  {voters.map((voter, index) => (
+                <div className="grid gap-3">
+                  {voters.map((voter) => (
                     <div
                       key={voter.id}
-                      className="p-3 sm:p-4 bg-white rounded-lg border border-gray-200 shadow-sm 
-                        hover:shadow-md transition-all duration-200 ease-in-out
-                        transform hover:-translate-y-0.5"
+                      className="p-4 rounded-lg bg-neutral-50 hover:bg-neutral-100 
+                        transition-all duration-200 group"
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
-                          <p className="text-sm sm:text-base font-medium text-gray-900">
+                          <p className="font-medium text-neutral-900">
                             {voter.name}
                           </p>
-                          <p className="text-sm text-gray-600">{voter.email}</p>
+                          <p className="text-sm text-neutral-500">
+                            {voter.email}
+                          </p>
                         </div>
                         {voter.departments?.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                          <div className="flex flex-wrap gap-2">
                             {voter.departments
                               .filter(
                                 (dept: any) => dept.organizationId === orgId
@@ -150,8 +152,9 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                               .map((dept: any) => (
                                 <span
                                   key={dept.id}
-                                  className="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full
-                                    hover:bg-gray-200 transition-colors duration-200"
+                                  className="px-3 py-1 text-xs font-medium bg-white text-neutral-600 
+                                    rounded-full border border-neutral-200 shadow-sm 
+                                    group-hover:border-neutral-300 transition-all"
                                 >
                                   {dept.name}
                                 </span>
@@ -167,30 +170,29 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           )}
         </div>
 
-        <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 mt-3">
-          Departments
-        </h2>
+        <div className="px-6 py-4">
+          <h2 className="text-lg font-semibold text-neutral-800 mb-4">
+            Departments
+          </h2>
 
-        {!departmentsLoading ? (
-          <div className="space-y-2">
-            {departments.length !== 0 ? (
+          {departmentsLoading ? (
+            <div className="flex justify-center py-8">
+              <LoadingSpinner size="sm" />
+            </div>
+          ) : departments.length === 0 ? (
+            <p className="text-center text-neutral-500 py-8">
+              No departments are available. Please create one to conduct voting.
+            </p>
+          ) : (
+            <div className="space-y-3">
               <DepartmentTag
                 departments={departments}
                 handleDeleteDepartment={handleDeleteDepartment}
                 organizationId={currentOrg.id}
               />
-            ) : (
-              <p className="text-sm sm:text-base">
-                No departments are available. Please create one to conduct
-                voting.
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="flex justify-center py-4">
-            <LoadingSpinner size="sm" />
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

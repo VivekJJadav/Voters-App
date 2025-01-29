@@ -46,12 +46,9 @@ const Navbar = () => {
   const isMobile = useMedia("(max-width: 1024px)", false);
 
   const user = useAuthStore((state) => state.user) as User;
-
   const logout = useAuthStore((state) => state.logout);
-
   const pathname = usePathname();
   const router = useRouter();
-
   const scrolled = useScrollTop();
 
   const onClick = async (href: string) => {
@@ -65,38 +62,37 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-
     router.push("/sign-in");
   };
 
   return (
     <div
       className={cn(
-        "z-50 bg-gradient-to-b from-blue-700 to-blue-600 h-24 w-full fixed",
-        scrolled && "border-b shadow-sm"
+        "z-50 bg-slate-600 h-24 w-full fixed transition-all duration-300",
+        scrolled && "border-b border-neutral-200 shadow-sm"
       )}
     >
-      <nav className="justify-between flex pt-7 px-5">
+      <nav className="justify-between flex items-center h-full px-6 max-w-8xl mx-auto">
         {isMobile ? (
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="font-normal bg-white/10 hover:bg-white/20 hover:text-white border-none focus-visible:ring-offset-0 focus-visible:ring-transparent outline-none text-white focus:bg-white/30 transition"
+                className="font-normal text-neutral-800 hover:bg-neutral-100"
               >
                 <Menu className="size-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <SheetTitle>Menu</SheetTitle>
+            <SheetContent side="left" className="bg-[#FDFBF7]">
+              <SheetTitle className="text-neutral-800">Menu</SheetTitle>
               <nav className="flex flex-col gap-y-2 pt-6">
                 {routes.map((route) => (
                   <Button
                     key={route.href}
                     variant={route.href === pathname ? "secondary" : "ghost"}
                     onClick={() => onClick(route.href)}
-                    className="w-full justify-start"
+                    className="w-full justify-start text-neutral-800 hover:bg-neutral-100"
                   >
                     {route.label}
                   </Button>
@@ -106,7 +102,7 @@ const Navbar = () => {
           </Sheet>
         ) : (
           <div className="justify-start text-center">
-            <ul className="flex space-x-2">
+            <ul className="flex space-x-4">
               {routes.map((item) => (
                 <NavButton
                   key={item.href}
@@ -117,16 +113,20 @@ const Navbar = () => {
             </ul>
           </div>
         )}
-        <div className="flex absolute right-4 gap-2">
-          <div className="w-8 h-8 bg-transparent border-[1px] rounded-sm border-blue-500 hover:border-cyan-950/40 flex items-center justify-center mt-[1px]">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full  transition flex items-center justify-center">
             <NotificationDropdown />
           </div>
-          {user && <Button onClick={handleLogout}>Log out</Button>}
+          {user && (
+            <Button
+              onClick={handleLogout}
+              className="bg-neutral-900 text-white hover:bg-neutral-800 transition"
+            >
+              Log out
+            </Button>
+          )}
         </div>
       </nav>
-      {/* <div className="lg:w-60 w-full z-50 pt-8 px-7">
-        <Selector placeholder="Select an organization" />
-      </div> */}
     </div>
   );
 };

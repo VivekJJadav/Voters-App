@@ -10,13 +10,17 @@ type Props = {
 const NavButton = ({ href, label }: Props) => {
   const pathname = usePathname();
   return (
-    <li
-      className={cn(
-        "font-sans cursor-pointer text-slate-100 text-base rounded-md transform transition duration-300 ease-in-out hover:bg-blue-500 hover:scale-110 px-3 py-2",
-        pathname === href && "bg-white/10"
-      )}
-    >
-      <Link href={href}>{label}</Link>
+    <li className="list-none">
+      <Link href={href}>
+        <span
+          className={cn(
+            "inline-block font-sans cursor-pointer text-white hover:text-black text-base font-medium rounded-lg px-5 py-2.5 transform transition duration-300 ease-in-out hover:scale-105 hover:bg-slate-300",
+            pathname === href && "bg-slate-300 text-black hover:bg-slate-300"
+          )}
+        >
+          {label}
+        </span>
+      </Link>
     </li>
   );
 };
