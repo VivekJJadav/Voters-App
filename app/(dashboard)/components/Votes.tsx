@@ -14,7 +14,7 @@ const Votes = ({ vote }: VoteContainerProps) => {
   };
 
   return (
-    <div className="flex mx-2 my-2">
+    <div className="flex mx-5 my-5 justify-around">
       <VoteContainer vote={vote} onClick={onClick} />
     </div>
   );

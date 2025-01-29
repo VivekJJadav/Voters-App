@@ -68,8 +68,8 @@ const Navbar = () => {
   return (
     <div
       className={cn(
-        "z-50 bg-slate-600 h-24 w-full fixed transition-all duration-300",
-        scrolled && "border-b border-neutral-200 shadow-sm"
+        "z-50 bg-gradient-to-r from-slate-800 to-slate-900 h-24 w-full fixed transition-all duration-300",
+        scrolled && "border-b border-neutral-200 shadow-lg"
       )}
     >
       <nav className="justify-between flex items-center h-full px-6 max-w-8xl mx-auto">
@@ -79,9 +79,9 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="font-normal text-neutral-800 hover:bg-neutral-100"
+                className="font-normal text-white border-white border-[1px] hover:bg-neutral-100 hover:text-black"
               >
-                <Menu className="size-4" />
+                <Menu className="size-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="bg-[#FDFBF7]">
@@ -114,13 +114,13 @@ const Navbar = () => {
           </div>
         )}
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full  transition flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full transition flex items-center justify-center hover:bg-slate-700">
             <NotificationDropdown />
           </div>
           {user && (
             <Button
               onClick={handleLogout}
-              className="bg-neutral-900 text-white hover:bg-neutral-800 transition"
+              className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-800/50"
             >
               Log out
             </Button>

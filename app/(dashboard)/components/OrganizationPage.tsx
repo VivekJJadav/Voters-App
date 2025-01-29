@@ -62,6 +62,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div className="flex flex-wrap gap-3">
           <AddMembersDialog organizationId={orgId} />
@@ -73,7 +74,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           />
         </div>
 
-        <h1 className="text-2xl font-semibold text-neutral-800">
+        <h1 className="text-3xl font-bold text-neutral-900">
           {currentOrg.name}
         </h1>
 
@@ -82,7 +83,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           <Button
             variant="outline"
             size="sm"
-            className="text-neutral-700 hover:text-neutral-900"
+            className="text-neutral-700 hover:text-neutral-900 hover:bg-neutral-50 border-neutral-200 transition-all"
           >
             <Pencil className="w-4 h-4 mr-2" />
             Edit
@@ -92,7 +93,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             size="sm"
             onClick={() => onDelete(currentOrg.id)}
             disabled={isLoading}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 transition-all"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Delete
@@ -100,13 +101,14 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
+      {/* Members Section */}
+      <div className="bg-white rounded-xl border border-neutral-200 shadow-lg overflow-hidden">
         <div className="border-b border-neutral-200">
           <button
             onClick={() => setIsMembersExpanded(!isMembersExpanded)}
-            className="w-full px-6 py-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-neutral-50 transition-all"
           >
-            <h2 className="text-lg font-semibold text-neutral-800">
+            <h2 className="text-xl font-semibold text-neutral-900">
               Members ({voters.length})
             </h2>
             <ChevronDown
@@ -132,7 +134,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                     <div
                       key={voter.id}
                       className="p-4 rounded-lg bg-neutral-50 hover:bg-neutral-100 
-                        transition-all duration-200 group"
+                        transition-all duration-200 group shadow-sm"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="space-y-1">
@@ -170,8 +172,9 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           )}
         </div>
 
+        {/* Departments Section */}
         <div className="px-6 py-4">
-          <h2 className="text-lg font-semibold text-neutral-800 mb-4">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-4">
             Departments
           </h2>
 

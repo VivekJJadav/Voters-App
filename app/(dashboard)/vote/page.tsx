@@ -45,7 +45,7 @@ const Vote = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="py-2 px-2 mt-28 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white">
+      <div className="px-2 mt-24 py-6 pl-6 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white z-50">
         <SelectorForm
           values={organizations}
           placeholder="Select a organization"
@@ -56,17 +56,31 @@ const Vote = () => {
           }}
         />
       </div>
-      <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap gap-4">
-        {votesLoading ? (
-          <div className="h-screen w-full flex items-center justify-center">
-            <LoadingSpinner size="lg" />
-          </div>
-        ) : votes.length === 0 ? (
-          <div className="w-full text-center">No votes found</div>
-        ) : (
-          votes.map((vote) => <Votes vote={vote} key={vote.id} />)
-        )}
-      </div>
+      {votes.length < 3 ? (
+        <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap">
+          {votesLoading ? (
+            <div className="h-screen w-full flex items-center justify-center">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : votes.length === 0 ? (
+            <div className="w-full text-center">No votes found</div>
+          ) : (
+            votes.map((vote) => <Votes vote={vote} key={vote.id} />)
+          )}
+        </div>
+      ) : (
+        <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap justify-around">
+          {votesLoading ? (
+            <div className="h-screen w-full flex items-center justify-center">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : votes.length === 0 ? (
+            <div className="w-full text-center">No votes found</div>
+          ) : (
+            votes.map((vote) => <Votes vote={vote} key={vote.id} />)
+          )}
+        </div>
+      )}
     </div>
   );
 };
