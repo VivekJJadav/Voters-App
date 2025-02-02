@@ -38,14 +38,22 @@ export const SignInCard = () => {
   const onSubmit = async (values: { email: string; password: string }) => {
     setIsLoading(true);
     try {
+      console.log("Submitting login with values:", values);
+
       const response = await axios.post("/api/login", {
         ...values,
         organizationId: organizationId || undefined,
       });
 
+      console.log("Login response:", response.data); // Check what's coming back
+
       voterStore.setVoters([]);
 
       setUser(response.data.user, response.data.token);
+      console.log(
+        "After setting user - Current auth state:",
+        useAuthStore.getState()
+      ); // Check store state
 
       if (response.status === 200 || response.status === 302) {
         window.location.href = "/home";

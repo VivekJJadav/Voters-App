@@ -3,19 +3,19 @@ import VoteContainer from "./VoteContainer";
 import { useRouter } from "next/navigation";
 
 interface VoteContainerProps {
-  vote: Vote;
+  currentVote: Vote;
 }
 
-const Votes = ({ vote }: VoteContainerProps) => {
+const Votes = ({ currentVote }: VoteContainerProps) => {
   const router = useRouter();
 
   const onClick = () => {
-    router.push(`/vote/${vote.id}`); 
+    router.push(`/vote/${currentVote.id}`); 
   };
 
   return (
     <div className="flex mx-5 my-5 justify-around">
-      <VoteContainer vote={vote} onClick={onClick} />
+      <VoteContainer currentVote={currentVote} onClick={onClick} />
     </div>
   );
 };

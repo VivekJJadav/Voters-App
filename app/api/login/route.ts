@@ -116,6 +116,7 @@ export async function POST(request: Request) {
           ? "Login successful and organization membership updated"
           : "Login successful",
         user: updatedUser,
+        token: token
       },
       { status: 200 }
     );

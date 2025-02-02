@@ -75,19 +75,12 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70">
             {currentOrg.name}
           </h1>
           <div className="flex items-center gap-3">
-            <Badge
-              variant="outline"
-              className="text-muted-foreground font-normal"
-            >
-              ID: {currentOrg.id}
-            </Badge>
             <Badge variant="secondary" className="font-normal">
               {departments.length} Departments
             </Badge>

@@ -65,7 +65,7 @@ const Vote = () => {
           ) : votes.length === 0 ? (
             <div className="w-full text-center">No votes found</div>
           ) : (
-            votes.map((vote) => <Votes vote={vote} key={vote.id} />)
+            votes.map((vote) => <Votes currentVote={vote} key={vote.id} />)
           )}
         </div>
       ) : (
@@ -77,7 +77,7 @@ const Vote = () => {
           ) : votes.length === 0 ? (
             <div className="w-full text-center">No votes found</div>
           ) : (
-            votes.map((vote) => <Votes vote={vote} key={vote.id} />)
+            votes.map((vote) => <Votes currentVote={vote} key={vote.id} />)
           )}
         </div>
       )}

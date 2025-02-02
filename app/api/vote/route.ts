@@ -25,12 +25,17 @@ export async function POST(request: Request) {
     const voteStartTime = startTime ? new Date(startTime) : new Date();
     const voteEndTime = endTime ? new Date(endTime) : null;
 
+    const now = new Date();
+    const isActive =
+      voteStartTime <= now && (!voteEndTime || voteEndTime > now);
+
     const newVote = await client.vote.create({
       data: {
         name,
         description,
         startTime: voteStartTime,
         endTime: voteEndTime,
+        isActive,
         isAnonymous: isAnonymous || false,
         voteType: voteType || "SINGLE_CHOICE",
         organizationId,
@@ -81,7 +86,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const organizationId = request.headers.get("organizationId");
-    const userId = request.headers.get("userId"); 
+    const userId = request.headers.get("userId");
 
     if (!organizationId) {
       return NextResponse.json(
@@ -147,7 +152,13 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json(votes);
+    const now = new Date();
+    const updatedVotes = votes.map((vote) => ({
+      ...vote,
+      isActive: vote.startTime <= now && (!vote.endTime || vote.endTime > now),
+    }));
+
+    return NextResponse.json(updatedVotes);
   } catch (error) {
     console.error("Error fetching votes:", error);
     return NextResponse.json(

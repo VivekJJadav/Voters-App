@@ -64,8 +64,19 @@ export async function GET(
     if (!vote) {
       return NextResponse.json({ error: "Vote not found" }, { status: 404 });
     }
+    
+    const now = new Date();
+    const startTime = new Date(vote.startTime);
+    const endTime = vote.endTime ? new Date(vote.endTime) : null;
 
-    return NextResponse.json(vote);
+    const isActive = startTime <= now && (!endTime || endTime > now);
+
+    return NextResponse.json({
+      ...vote,
+      isActive,
+      startTime: startTime.toISOString(),
+      endTime: endTime?.toISOString(),
+    });
   } catch (error) {
     console.error("Error fetching vote:", error);
     return NextResponse.json(
