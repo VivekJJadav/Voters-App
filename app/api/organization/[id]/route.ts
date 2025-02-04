@@ -17,9 +17,9 @@ export async function GET(
   try {
     const organizations = await client.organization.findMany({
       where: { creatorId: id },
-        orderBy: {
-          createdAt: 'desc'  
-        },
+        // orderBy: {
+        //   createdAt: 'desc'  
+        // },
       select: {
         id: true,
         name: true,

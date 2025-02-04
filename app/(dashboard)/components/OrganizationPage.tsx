@@ -173,8 +173,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                           No departments yet
                         </p>
                         <p className="text-sm text-muted-foreground/80">
-                          Create departments to organize your members and manage
-                          voting groups
+                          Create departments to organize your members 
                         </p>
                       </div>
                       <NewDepartmentDialog
