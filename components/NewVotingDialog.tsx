@@ -107,7 +107,6 @@ const NewVotingDialog = ({
       }
 
       router.refresh();
-      router.push(`/vote`);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to create vote"
