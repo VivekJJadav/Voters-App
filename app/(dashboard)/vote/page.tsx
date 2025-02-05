@@ -87,11 +87,19 @@ const Vote = () => {
           }}
         />
       </div>
-      <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap justify-around">
-        {votes.map((vote) => (
-          <Votes currentVote={vote} key={vote.id} />
-        ))}
-      </div>
+      {votes.length > 2 ? (
+        <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap justify-evenly">
+          {votes.map((vote) => (
+            <Votes currentVote={vote} key={vote.id} />
+          ))}
+        </div>
+      ) : (
+        <div className="ml-[80px] mr-[80px] mt-[220px] lg:mt-[200px] md:mt-[200px] flex flex-wrap">
+          {votes.map((vote) => (
+            <Votes currentVote={vote} key={vote.id} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

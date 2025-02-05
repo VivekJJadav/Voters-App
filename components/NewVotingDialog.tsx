@@ -31,11 +31,13 @@ import { toast } from "sonner";
 import { User } from "@prisma/client";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface NewVotingDialogProps {
   label: string;
   onVoteCreated?: () => void;
   departmentId?: string;
+  className?: string;
 }
 
 const RequiredIndicator = () => <span className="text-red-500 ml-1">*</span>;
@@ -44,6 +46,7 @@ const NewVotingDialog = ({
   label,
   onVoteCreated,
   departmentId,
+  className,
 }: NewVotingDialogProps) => {
   const router = useRouter();
 
@@ -91,7 +94,7 @@ const NewVotingDialog = ({
         isAnonymous,
         voteType: votingType,
         organizationId: selectedOrgId,
-        ...(departmentId && { departmentId })
+        ...(departmentId && { departmentId }),
       });
 
       if (response.status !== 201) {
@@ -129,7 +132,12 @@ const NewVotingDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full sm:w-auto bg-black text-white mb-2 sm:mb-0">
+        <Button
+          className={cn(
+            "sm:w-auto bg-black text-white mb-2 sm:mb-0",
+            className
+          )}
+        >
           <Plus className="size-4 mr-2" />
           {label}
         </Button>

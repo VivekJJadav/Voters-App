@@ -24,6 +24,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import useGetDepartments from "@/app/actions/useGetDepartments";
 import axios from "axios";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface Member {
   email: string;
@@ -61,10 +62,12 @@ function parseCSV(csvText: string): Array<{ [key: string]: string }> {
 
 interface AddMembersDialogProps {
   organizationId: string;
+  className?: string
 }
 
 export default function AddMembersDialog({
   organizationId,
+  className
 }: AddMembersDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -279,7 +282,7 @@ export default function AddMembersDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add Members</Button>
+        <Button className={cn(className)}>Add Members</Button>
       </DialogTrigger>
 
       <DialogContent className="max-w-2xl">

@@ -35,6 +35,7 @@ interface NewDepartmentDialogProps {
   departments: Department[];
   triggerRef?: RefObject<HTMLButtonElement>;
   parentId?: string | null;
+  className?: string
 }
 
 interface FormValues {
@@ -50,6 +51,7 @@ const NewDepartmentDialog = ({
   departments,
   triggerRef,
   parentId,
+  className
 }: NewDepartmentDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
@@ -126,7 +128,8 @@ const NewDepartmentDialog = ({
         <Button
           ref={triggerRef}
           className={cn(
-            "text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base",
+            "text-sm px-2 py-1 sm:px-4 sm:py-2 sm:text-base inline-flex items-center justify-center",
+            className,
             label === "Create a new Department"
               ? "inline-flex items-center justify-center"
               : "hidden"
