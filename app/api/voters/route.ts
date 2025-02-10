@@ -162,7 +162,8 @@ export async function PUT(request: Request) {
         organizations: true,
         candidates: true,
         slogans: true,
-        voteResults: true,
+        votesReceived: true,
+        votesSubmitted: true
       },
     });
 
