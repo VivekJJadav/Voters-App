@@ -167,13 +167,17 @@ export async function POST(
 
       const maxVotes = Math.max(...voteResults.map((r) => r.voteCount));
 
+      // If multiple candidates have the max votes, mark none as winner
       await tx.voteResult.updateMany({
         where: {
           voteId,
           voteCount: maxVotes,
         },
         data: {
-          isWinner: true,
+          isWinner:
+            voteResults.filter((r) => r.voteCount === maxVotes).length > 1
+              ? false
+              : true,
         },
       });
 
