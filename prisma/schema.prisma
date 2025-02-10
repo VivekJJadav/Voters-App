@@ -23,7 +23,8 @@ model User {
   departments          UserDepartment[]
   candidates           VoteCandidate[]
   slogans              Slogan[]
-  voteResults          VoteResult[]
+  votesSubmitted VoteResult[] @relation("userVotes")
+  votesReceived  VoteResult[] @relation("candidateVotes")
 }
 
 model Organization {
@@ -116,12 +117,14 @@ model VoteResult {
   statistics Json?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  userId     String?   @db.ObjectId // Add this field
+  user       User?     @relation("userVotes", fields: [userId], references: [id])
+  voteId     String   @db.ObjectId
+  vote       Vote     @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  candidateId String  @db.ObjectId
+  candidate   User    @relation("candidateVotes", fields: [candidateId], references: [id])
 
-  voteId      String @db.ObjectId
-  vote        Vote   @relation(fields: [voteId], references: [id], onDelete: Cascade)
-  candidateId String @db.ObjectId
-  candidate   User   @relation(fields: [candidateId], references: [id])
-
+  @@unique([voteId, userId])
   @@index([voteId])
   @@index([candidateId])
 }

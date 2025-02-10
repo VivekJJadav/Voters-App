@@ -6,16 +6,17 @@ import useGetVoters from "@/app/actions/useGetVoters";
 import useGetVotes from "@/app/actions/useGetVotes";
 import AddMembersDialog from "@/components/AddMemberDialog";
 import NewVotingDialog from "@/components/NewVotingDialog";
-import { Badge } from "@/components/ui/badge";
 import DepartmentBlock from "./DepartmentBlock";
 import MemberBlock from "./MemberBlock";
 import NewDepartmentDialog from "@/components/NewDepartmentDialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlusCircle, ChevronRight } from "lucide-react";
+import { PlusCircle, ChevronRight, Delete, Trash2 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import axios from "axios";
+import { toast } from "sonner";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -31,7 +32,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
     handleNewDepartment,
   } = useGetDepartments(orgId);
   const { voters } = useGetVoters(orgId);
-  const { votes } = useGetVotes(orgId);
+  const { votes, deleteVote } = useGetVotes(orgId);
 
   if (organizationsLoading || departmentsLoading) {
     return (
@@ -75,7 +76,13 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                           : "Ongoing"}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <div className="">
+                      <Trash2
+                        className="w-5 h-5 text-muted-foreground cursor-pointer text-red-600"
+                        onClick={() => deleteVote(vote.id)}
+                      />
+                      {/* <ChevronRight className="w-5 h-5 text-muted-foreground" /> */}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -136,7 +143,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
               </p>
             </div>
             <div className="space-y-3">
-              <NewVotingDialog label="New vote" className="w-full"/>
+              <NewVotingDialog label="New vote" className="w-full" />
               <NewDepartmentDialog
                 label="Create a new Department"
                 organizationId={currentOrg.id}

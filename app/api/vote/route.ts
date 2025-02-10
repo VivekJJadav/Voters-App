@@ -88,24 +88,17 @@ export async function GET(request: Request) {
     const organizationId = request.headers.get("organizationId");
     const userId = request.headers.get("userId");
 
-    if (!organizationId) {
+    if (!organizationId || !userId) {
       return NextResponse.json(
-        { error: "Organization ID is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
+        { error: "Organization ID and User ID are required" },
         { status: 400 }
       );
     }
 
     const membership = await client.organizationMember.findFirst({
       where: {
-        userId: userId,
-        organizationId: organizationId,
+        userId,
+        organizationId,
       },
     });
 
@@ -118,7 +111,7 @@ export async function GET(request: Request) {
 
     const votes = await client.vote.findMany({
       where: {
-        organizationId: organizationId,
+        organizationId,
       },
       include: {
         candidates: {
@@ -152,13 +145,13 @@ export async function GET(request: Request) {
       },
     });
 
-    const now = new Date();
-    const updatedVotes = votes.map((vote) => ({
+    const filteredVotes = votes.map(vote => ({
       ...vote,
-      isActive: vote.startTime <= now && (!vote.endTime || vote.endTime > now),
+      results: vote.results.filter(result => result.userId != null && result.candidateId != null),
+      isActive: vote.startTime <= new Date() && (!vote.endTime || vote.endTime > new Date())
     }));
 
-    return NextResponse.json(updatedVotes);
+    return NextResponse.json(filteredVotes);
   } catch (error) {
     console.error("Error fetching votes:", error);
     return NextResponse.json(

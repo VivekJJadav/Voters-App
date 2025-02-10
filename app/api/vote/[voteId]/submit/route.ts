@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import client from "@/app/libs/prismadb";
-import jwt from "jsonwebtoken";
 import * as jose from "jose";
 import { cookies } from "next/headers";
 
@@ -80,7 +79,7 @@ export async function POST(
       client.voteResult.findFirst({
         where: {
           voteId,
-          candidateId,
+          userId: user.id  // Check by user instead of candidateId
         },
       }),
     ]);
@@ -111,36 +110,93 @@ export async function POST(
       return NextResponse.json({ error: "Invalid candidate" }, { status: 400 });
     }
 
-    if (existingResult) {
+    const userVoteResult = await client.voteResult.findFirst({
+      where: {
+        voteId,
+        userId: user.id
+      },
+    });
+    
+    if (userVoteResult) {
       return NextResponse.json(
-        { error: "You have already voted" },
+        { error: "You have already voted in this vote" },
         { status: 400 }
       );
     }
 
     const result = await client.$transaction(async (tx) => {
-      const voteResult = await tx.voteResult.create({
-        data: {
+      // First, find existing vote result for this candidate in this vote
+      const existingCandidateResult = await tx.voteResult.findFirst({
+        where: {
           voteId,
           candidateId,
-          voteCount: 1,
-          statistics: {
-            votedAt: new Date(),
-            voterInfo: vote.isAnonymous ? null : user.id,
-          },
         },
       });
-
+    
+      // If candidate result exists, increment vote count
+      if (existingCandidateResult) {
+        await tx.voteResult.update({
+          where: { id: existingCandidateResult.id },
+          data: { 
+            voteCount: { increment: 1 },
+            statistics: {
+              votedAt: new Date(),
+              voterInfo: vote.isAnonymous ? null : user.id,
+            },
+          },
+        });
+      } else {
+        // Create new vote result if no existing result
+        await tx.voteResult.create({
+          data: {
+            voteId,
+            candidateId,
+            userId: user.id,
+            voteCount: 1,
+            statistics: {
+              votedAt: new Date(),
+              voterInfo: vote.isAnonymous ? null : user.id,
+            },
+          },
+        });
+      }
+    
+      // Update user vote participation
       await tx.user.update({
         where: { id: user.id },
         data: {
-          voteParticipationCount: {
-            increment: 1,
-          },
+          voteParticipationCount: { increment: 1 },
         },
       });
-
-      return voteResult;
+    
+      // Determine and mark the winner
+      const voteResults = await tx.voteResult.findMany({
+        where: { voteId },
+      });
+    
+      const maxVotes = Math.max(...voteResults.map(r => r.voteCount));
+      
+      await tx.voteResult.updateMany({
+        where: { 
+          voteId,
+          voteCount: maxVotes 
+        },
+        data: { 
+          isWinner: true 
+        },
+      });
+    
+      await tx.voteResult.updateMany({
+        where: { 
+          voteId,
+          voteCount: { not: maxVotes }
+        },
+        data: { 
+          isWinner: false 
+        },
+      });
+    
+      return { message: "Vote submitted successfully" };
     });
 
     return NextResponse.json(result, { status: 201 });
@@ -151,6 +207,75 @@ export async function POST(
         error: "Failed to submit vote",
         details: error instanceof Error ? error.message : String(error),
       },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(
+  request: Request,
+  { params }: { params: { voteId: string } }
+) {
+  try {
+    // First, let's get the vote results separately with error handling
+    const vote = await client.vote.findUnique({
+      where: {
+        id: params.voteId,
+      },
+      include: {
+        candidates: {
+          include: {
+            user: true
+          }
+        },
+        results: true,  // Get results without including candidate relation
+        slogans: true
+      }
+    });
+
+    if (!vote) {
+      return NextResponse.json(
+        { error: "Vote not found" },
+        { status: 404 }
+      );
+    }
+
+    // Then get the candidates data separately
+    const candidatesWithResults = await Promise.all(
+      vote.candidates.map(async (candidate) => {
+        const voteResult = vote.results.find(
+          result => result.candidateId === candidate.id  
+        );
+    
+        const slogan = vote.slogans.find(s => s.userId === candidate.userId);
+    
+        return {
+          id: candidate.id,
+          name: candidate.user.name,
+          slogan: slogan?.content || "No slogan provided",
+          votes: voteResult?.voteCount || 0,
+          isWinner: voteResult?.isWinner || false,
+          statistics: voteResult?.statistics || null
+        };
+      })
+    );
+
+    // Calculate total votes
+    const totalVotes = vote.results.reduce((sum, result) => sum + (result.voteCount || 0), 0);
+
+    return NextResponse.json({
+      id: vote.id,
+      voteName: vote.name,
+      totalVotes,
+      candidates: candidatesWithResults,
+      endDate: vote.endTime,
+      isActive: vote.isActive
+    });
+
+  } catch (error) {
+    console.error("Error fetching vote results:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch vote results" },
       { status: 500 }
     );
   }

@@ -17,6 +17,7 @@ import { useState } from "react";
 import NotificationDropdown from "./NotificationDropdown";
 import useAuthStore from "@/store/authStore";
 import { User } from "@prisma/client";
+import Image from "next/image";
 
 const routes = [
   {
@@ -68,41 +69,65 @@ const Navbar = () => {
   return (
     <div
       className={cn(
-        "z-50 bg-gradient-to-r from-slate-800 to-slate-900 h-24 w-full fixed transition-all duration-300",
-        scrolled && "border-b border-neutral-200 shadow-lg"
+        "z-50 bg-gradient-to-r from-slate-800 to-slate-900 h-20 w-full fixed transition-all duration-300",
+        scrolled && "border-b border-slate-700/50 shadow-xl"
       )}
     >
-      <nav className="justify-between flex items-center h-full px-6 max-w-8xl mx-auto">
+      <nav className="justify-between flex items-center h-full px-4 md:px-6 max-w-8xl mx-auto">
         {isMobile ? (
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="font-normal text-white border-white border-[1px] hover:bg-neutral-100 hover:text-black"
-              >
-                <Menu className="size-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="bg-[#FDFBF7]">
-              <SheetTitle className="text-neutral-800">Menu</SheetTitle>
-              <nav className="flex flex-col gap-y-2 pt-6">
-                {routes.map((route) => (
-                  <Button
-                    key={route.href}
-                    variant={route.href === pathname ? "secondary" : "ghost"}
-                    onClick={() => onClick(route.href)}
-                    className="w-full justify-start text-neutral-800 hover:bg-neutral-100"
-                  >
-                    {route.label}
-                  </Button>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
+          <div className="flex items-center gap-4">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="font-normal text-white border-white/80 border hover:bg-white/10 hover:text-white"
+                >
+                  <Menu className="size-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="bg-slate-50">
+                <SheetTitle className="text-slate-800 font-semibold">Menu</SheetTitle>
+                <nav className="flex flex-col gap-y-2 pt-6">
+                  {routes.map((route) => (
+                    <Button
+                      key={route.href}
+                      variant={route.href === pathname ? "secondary" : "ghost"}
+                      onClick={() => onClick(route.href)}
+                      className={cn(
+                        "w-full justify-start font-medium transition-colors",
+                        route.href === pathname 
+                          ? "bg-slate-200 text-slate-800 hover:bg-slate-300" 
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      )}
+                    >
+                      {route.label}
+                    </Button>
+                  ))}
+                </nav>
+              </SheetContent>
+            </Sheet>
+            <Image
+              src="/voterlogo.svg"
+              alt="Logo"
+              width={60}
+              height={60}
+              className="object-contain"
+              priority
+            />
+          </div>
         ) : (
-          <div className="justify-start text-center">
-            <ul className="flex space-x-4">
+          <div className="flex items-center gap-8">
+            <Image
+              src="/voterlogo.svg"
+              alt="Logo"
+              width={100}
+              height={100}
+              className="object-contain"
+              priority
+              onClick={() => router.push('/home')}
+            />
+            <ul className="flex items-center space-x-6">
               {routes.map((item) => (
                 <NavButton
                   key={item.href}
@@ -113,14 +138,17 @@ const Navbar = () => {
             </ul>
           </div>
         )}
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full transition flex items-center justify-center hover:bg-slate-700">
+        
+        <div className="flex items-center gap-6">
+          <div className="w-10 h-10 rounded-full transition-colors flex items-center justify-center hover:bg-slate-700/60">
             <NotificationDropdown />
           </div>
           {user && (
             <Button
               onClick={handleLogout}
-              className="bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-800/50"
+              className="bg-gradient-to-r from-red-600 to-red-700 text-white font-medium px-6
+                hover:from-red-700 hover:to-red-800 transition-all duration-300 
+                shadow-lg hover:shadow-red-900/30 hover:scale-[1.02]"
             >
               Log out
             </Button>

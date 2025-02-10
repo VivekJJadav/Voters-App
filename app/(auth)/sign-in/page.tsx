@@ -2,18 +2,35 @@
 
 import { SignInCard } from "@/app/features/(auth)/components/sign-in-card";
 import { Suspense } from "react";
+import Image from "next/image";
 
 const SignInPage = () => {
   return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-screen">
-          <div>Loading...</div>
+    <div className="fixed inset-0 w-full h-full overflow-hidden">
+      <div className="w-full h-full grid grid-cols-1 lg:grid-cols-2">
+        <div className="w-full h-full flex items-center justify-center p-4">
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center">
+                <div>Loading...</div>
+              </div>
+            }
+          >
+            <SignInCard />
+          </Suspense>
         </div>
-      }
-    >
-      <SignInCard />
-    </Suspense>
+        <div className="w-full h-full bg-slate-800 hidden lg:flex items-center justify-center">
+          <Image
+            src="/voterlogo.svg"
+            height={400}
+            width={400}
+            alt="Logo"
+            className="object-contain"
+            priority
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 

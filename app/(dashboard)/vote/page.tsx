@@ -76,7 +76,7 @@ const Vote = () => {
 
   return (
     <div className="flex flex-col">
-      <div className="px-2 mt-24 py-6 pl-6 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white z-50">
+      <div className="px-2 mt-20 py-6 pl-6 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white z-50">
         <SelectorForm
           values={organizations}
           placeholder="Select an organization"

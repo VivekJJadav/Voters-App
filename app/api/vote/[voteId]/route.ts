@@ -56,7 +56,11 @@ export async function GET(
             name: true,
           },
         },
-        results: true,
+        results: {
+          include: {
+            user: true,
+          }
+        },
         slogans: true,
       },
     });
