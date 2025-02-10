@@ -235,19 +235,17 @@ export async function GET(
     // Then get the candidates data separately
     const candidatesWithResults = await Promise.all(
       vote.candidates.map(async (candidate) => {
-        const voteResult = vote.results.find(
-          (result) => result.candidateId === candidate.id
+        const candidateVotes = vote.results.filter(
+          result => result.candidateId === candidate.id
         );
-
-        const slogan = vote.slogans.find((s) => s.userId === candidate.userId);
-
+    
+        const totalVotes = candidateVotes.reduce((sum, result) => sum + result.voteCount, 0);
+    
         return {
           id: candidate.id,
           name: candidate.user.name,
-          slogan: slogan?.content || "No slogan provided",
-          votes: voteResult?.voteCount || 0,
-          isWinner: voteResult?.isWinner || false,
-          statistics: voteResult?.statistics || null,
+          votes: totalVotes,
+          isWinner: candidateVotes.some(result => result.isWinner),
         };
       })
     );
