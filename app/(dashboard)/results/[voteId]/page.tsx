@@ -43,7 +43,6 @@ interface VoteDetails {
 }
 
 const Result = () => {
-  const token = useAuthStore((state) => state.token);
   const params = useParams();
   const voteId = Array.isArray(params.voteId)
     ? params.voteId[0]
@@ -131,7 +130,7 @@ const Result = () => {
                 candidate.isWinner ? "ring-2 ring-yellow-400" : ""
               }`}
             >
-              {candidate.isWinner && (
+              {candidate.isWinner === true && (
                 <div className="absolute -top-3 -right-3 bg-yellow-400 rounded-full p-2">
                   <Crown className="h-5 w-5 text-white" />
                 </div>
