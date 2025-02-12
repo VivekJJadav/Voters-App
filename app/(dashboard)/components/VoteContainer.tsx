@@ -41,7 +41,7 @@ const VoteContainer = ({ currentVote, onClick }: VoteContainerProps) => {
   return (
     <div
       onClick={isActive ? onClick : undefined}
-      className={`group relative w-80 h-44 rounded-xl shadow-lg transition-all duration-300 ease-out 
+      className={`group relative w-full h-auto min-h-[11rem] rounded-xl shadow-lg transition-all duration-300 ease-out 
         border border-gray-100 bg-gradient-to-br ${
           isActive
             ? "from-emerald-50 to-indigo-50 hover:shadow-2xl cursor-pointer"
@@ -52,19 +52,19 @@ const VoteContainer = ({ currentVote, onClick }: VoteContainerProps) => {
         {statusInfo.display}
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="p-5 space-y-4 pb-16">
         <div className="relative">
           <h3
             className={`text-lg font-bold ${
               isActive ? "text-black" : "text-gray-500"
-            }`}
+            } break-words`}
           >
             {currentVote.name}
           </h3>
         </div>
 
         <p
-          className={`text-sm rounded-lg py-2 px-3 shadow-sm ${
+          className={`text-sm rounded-lg py-2 px-3 shadow-sm break-words ${
             isActive
               ? "text-gray-600 bg-white/80"
               : "text-gray-400 bg-gray-100/80"

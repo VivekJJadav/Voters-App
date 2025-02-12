@@ -10,11 +10,11 @@ const Votes = ({ currentVote }: VoteContainerProps) => {
   const router = useRouter();
 
   const onClick = () => {
-    router.push(`/vote/${currentVote.id}`); 
+    router.push(`/vote/${currentVote.id}`);
   };
 
   return (
-    <div className="flex mx-5 my-5 justify-around">
+    <div className="w-full">
       <VoteContainer currentVote={currentVote} onClick={onClick} />
     </div>
   );

@@ -4,48 +4,33 @@ import { useEffect, useMemo, useState } from "react";
 import SelectorForm from "@/components/SelectorForm";
 import useGetVotes from "@/app/actions/useGetVotes";
 import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
-import Votes from "../components/Votes";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import useGetUserMemberships from "@/app/actions/useGetUserMemberships";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const Vote = () => {
-    const router = useRouter();
-
+  const router = useRouter();
   const [votesError, setVotesError] = useState<string | null>(null);
   const { organizations, organizationsLoading } = useGetUserMemberships();
   const { selectedOrgId, setSelectedOrgId } = useSelectedOrganization();
 
   const validOrganizationId = useMemo(() => {
     if (!organizations?.length) return undefined;
-    if (
-      selectedOrgId &&
-      organizations.some((org) => org.id === selectedOrgId)
-    ) {
+    if (selectedOrgId && organizations.some((org) => org.id === selectedOrgId)) {
       return selectedOrgId;
     }
     return organizations[0].id;
   }, [organizations, selectedOrgId]);
 
   useEffect(() => {
-    if (
-      !organizationsLoading &&
-      organizations?.length > 0 &&
-      validOrganizationId
-    ) {
+    if (!organizationsLoading && organizations?.length > 0 && validOrganizationId) {
       if (validOrganizationId !== selectedOrgId) {
         setSelectedOrgId(validOrganizationId);
       }
     }
-  }, [
-    organizations,
-    organizationsLoading,
-    validOrganizationId,
-    selectedOrgId,
-    setSelectedOrgId,
-  ]);
+  }, [organizations, organizationsLoading, validOrganizationId, selectedOrgId, setSelectedOrgId]);
 
   const { votes, loading: votesLoading } = useGetVotes(selectedOrgId || "");
 
@@ -57,15 +42,19 @@ const Vote = () => {
 
   if (votesError) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <p className="text-red-500">Error: {votesError}</p>
+      <div className="min-h-screen w-full flex items-center justify-center p-4 mt-24">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6">
+            <p className="text-red-500 text-center">Error: {votesError}</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (organizationsLoading || votesLoading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
+      <div className="min-h-screen w-full flex items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -73,40 +62,55 @@ const Vote = () => {
 
   if (organizations.length === 0) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <p>You are not a member of any organization.</p>
+      <div className="min-h-screen w-full flex items-center justify-center p-4 mt-24">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6">
+            <p className="text-center text-gray-600">You are not a member of any organization.</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="px-2 mt-20 py-6 pl-6 flex flex-col sm:flex-row sm:space-x-2 fixed w-full bg-white z-50">
-        <SelectorForm
-          values={organizations}
-          placeholder="Select an organization"
-          loading={organizationsLoading}
-          value={selectedOrgId}
-          onChange={(newValue) => {
-            setSelectedOrgId(newValue);
-          }}
-        />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <div className="fixed top-20 left-0 right-0 bg-white border-b z-40 px-4 py-4 md:px-6">
+        <div className="max-w-3xl mx-auto">
+          <SelectorForm
+            values={organizations}
+            placeholder="Select an organization"
+            loading={organizationsLoading}
+            value={selectedOrgId}
+            onChange={(newValue) => {
+              setSelectedOrgId(newValue);
+            }}
+          />
+        </div>
       </div>
-      {/* Add mt-32 to account for the fixed header and pt-6 for padding */}
-      <div className="space-y-3 mt-32 pt-6 px-6">
+
+      <div className="max-w-3xl mx-auto w-full px-4 md:px-6 pt-48 pb-8 space-y-4">
         {votes.map((vote) => (
-          <Card key={vote.id} className="hover:shadow-sm transition-shadow" onClick={() => router.push(`/results/${vote.id}`)}>
-            <CardContent className="p-4 flex justify-between items-center">
-              <div>
-                <h3 className="font-medium">{vote.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(vote.startTime).toLocaleDateString()}-
-                  {vote.endTime
-                    ? new Date(vote.endTime).toLocaleDateString()
-                    : "Ongoing"}
-                </p>
+          <Card 
+            key={vote.id} 
+            className="hover:shadow-md transition-all duration-200 cursor-pointer border-gray-200"
+            onClick={() => router.push(`/results/${vote.id}`)}
+          >
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg text-gray-900 mb-2 truncate">
+                    {vote.name}
+                  </h3>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    <span>
+                      {new Date(vote.startTime).toLocaleDateString()} - 
+                      {vote.endTime ? new Date(vote.endTime).toLocaleDateString() : "Ongoing"}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
               </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </CardContent>
           </Card>
         ))}

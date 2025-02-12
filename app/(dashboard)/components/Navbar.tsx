@@ -75,7 +75,7 @@ const Navbar = () => {
     >
       <nav className="justify-between flex items-center h-full px-4 md:px-6 max-w-8xl mx-auto">
         {isMobile ? (
-          <div className="flex items-center gap-4">
+          <>
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button
@@ -107,15 +107,17 @@ const Navbar = () => {
                 </nav>
               </SheetContent>
             </Sheet>
-            <Image
-              src="/voterlogo.svg"
-              alt="Logo"
-              width={60}
-              height={60}
-              className="object-contain"
-              priority
-            />
-          </div>
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <Image
+                src="/voterlogo.svg"
+                alt="Logo"
+                width={60}
+                height={60}
+                className="object-contain"
+                priority
+              />
+            </div>
+          </>
         ) : (
           <div className="flex items-center gap-8">
             <Image
@@ -123,7 +125,7 @@ const Navbar = () => {
               alt="Logo"
               width={100}
               height={100}
-              className="object-contain"
+              className="object-contain cursor-pointer"
               priority
               onClick={() => router.push('/home')}
             />

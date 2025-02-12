@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import Link from "next/link";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export const SignUpCard = () => {
   const router = useRouter();
@@ -76,6 +77,23 @@ export const SignUpCard = () => {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full h-full md:w-[487px] border-none shadow-none">
+        {/* Logo Section - Adjusted for SVG */}
+        <div className="flex justify-center pt-6 px-4 sm:pt-8">
+          <div className="relative w-full max-w-[180px] sm:max-w-[200px] aspect-[4/1]">
+            <Image
+              src="/voterlogo.svg" // Update with your SVG path
+              alt="Company Logo"
+              width={200}
+              height={50}
+              style={{
+                width: "100%",
+                height: "auto",
+              }}
+              className="object-contain"
+              priority
+            />
+          </div>
+        </div>
         <CardHeader className="flex items-center justify-center text-center p-7">
           <CardTitle className="text-2xl">Sign Up</CardTitle>
           <CardDescription>

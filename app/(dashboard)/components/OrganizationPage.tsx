@@ -24,19 +24,14 @@ interface OrganizationPageProps {
 
 const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   const [activeTab, setActiveTab] = useState("votes");
-  const { organizations, loading: organizationsLoading } =
-    useGetOrganizations();
-  const {
-    departments,
-    loading: departmentsLoading,
-    handleNewDepartment,
-  } = useGetDepartments(orgId);
+  const { organizations, loading: organizationsLoading } = useGetOrganizations();
+  const { departments, loading: departmentsLoading, handleNewDepartment } = useGetDepartments(orgId);
   const { voters } = useGetVoters(orgId);
   const { votes, deleteVote } = useGetVotes(orgId);
 
   if (organizationsLoading || departmentsLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center min-h-screen pt-20">
         <LoadingSpinner size="md" />
       </div>
     );
@@ -45,7 +40,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   const currentOrg = organizations.find((org) => org.id === orgId);
   if (!currentOrg) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center min-h-screen pt-20">
         Select an organization to begin
       </div>
     );
@@ -55,33 +50,27 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
     switch (activeTab) {
       case "votes":
         return (
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Active Votes</h2>
               <NewVotingDialog label="New vote" />
             </div>
             <div className="space-y-3">
               {votes.map((vote) => (
-                <Card
-                  key={vote.id}
-                  className="hover:shadow-sm transition-shadow"
-                >
+                <Card key={vote.id} className="hover:shadow-sm transition-shadow">
                   <CardContent className="p-4 flex justify-between items-center">
-                    <div>
-                      <h3 className="font-medium">{vote.name}</h3>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium truncate">{vote.name}</h3>
                       <p className="text-sm text-muted-foreground">
                         {new Date(vote.startTime).toLocaleDateString()}-
-                        {vote.endTime
-                          ? new Date(vote.endTime).toLocaleDateString()
-                          : "Ongoing"}
+                        {vote.endTime ? new Date(vote.endTime).toLocaleDateString() : "Ongoing"}
                       </p>
                     </div>
-                    <div className="">
+                    <div className="ml-4">
                       <Trash2
-                        className="w-5 h-5 text-muted-foreground cursor-pointer text-red-600"
+                        className="w-5 h-5 text-red-600 cursor-pointer"
                         onClick={() => deleteVote(vote.id)}
                       />
-                      {/* <ChevronRight className="w-5 h-5 text-muted-foreground" /> */}
                     </div>
                   </CardContent>
                 </Card>
@@ -91,7 +80,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         );
       case "departments":
         return departments.length !== 0 ? (
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Departments</h2>
             </div>
@@ -100,7 +89,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center mt-64">
+          <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
             <NewDepartmentDialog
               label="Create a new Department"
               organizationId={currentOrg.id}
@@ -111,7 +100,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         );
       case "members":
         return voters.length !== 0 ? (
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Members</h2>
               <AddMembersDialog organizationId={orgId} />
@@ -121,7 +110,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center mt-64">
+          <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
             <AddMembersDialog organizationId={orgId} />
           </div>
         );
@@ -130,9 +119,9 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   if (departments.length === 0 && voters.length === 0) {
     return (
-      <div className="flex items-center justify-center h-screen p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 space-y-6">
+      <div className="flex items-center justify-center min-h-screen p-4 pt-24">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="p-6 space-y-8">
             <div className="text-center space-y-4">
               <PlusCircle className="w-12 h-12 text-primary mx-auto" />
               <h2 className="text-xl font-semibold">
@@ -160,26 +149,29 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <header className="border-b bg-white px-6 py-4">
+    <div className="min-h-screen flex flex-col pt-20">
+      <header className="border-b bg-white px-4 md:px-6 py-4">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-semibold mb-4">{currentOrg.name}</h1>
-          <div className="flex gap-2">
+          <h1 className="text-xl md:text-2xl font-semibold mb-4">{currentOrg.name}</h1>
+          <div className="flex gap-2 overflow-x-auto pb-2 -mb-2">
             <Button
               variant={activeTab === "votes" ? "default" : "outline"}
               onClick={() => setActiveTab("votes")}
+              className="whitespace-nowrap"
             >
               Votes ({votes.length})
             </Button>
             <Button
               variant={activeTab === "departments" ? "default" : "outline"}
               onClick={() => setActiveTab("departments")}
+              className="whitespace-nowrap"
             >
               Departments ({departments.length})
             </Button>
             <Button
               variant={activeTab === "members" ? "default" : "outline"}
               onClick={() => setActiveTab("members")}
+              className="whitespace-nowrap"
             >
               Members ({voters.length})
             </Button>
