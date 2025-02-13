@@ -12,9 +12,13 @@ const VotePage = () => {
   const token = useAuthStore((state) => state.token);
   const logout = useAuthStore((state) => state.logout);
   const params = useParams();
-  const voteId = Array.isArray(params.voteId) ? params.voteId[0] : params.voteId;
+  const voteId = Array.isArray(params.voteId)
+    ? params.voteId[0]
+    : params.voteId;
   const { vote, loading } = useGetVote(voteId);
-  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<string | null>(
+    null
+  );
   const [votedCandidate, setVotedCandidate] = useState<string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -197,7 +201,9 @@ const VotePage = () => {
                           </div>
                         </div>
                       ) : (
-                        <p className="mt-4 text-sm text-gray-500 italic">No slogan provided</p>
+                        <p className="mt-4 text-sm text-gray-500 italic">
+                          No slogan provided
+                        </p>
                       )}
                     </div>
 
@@ -215,31 +221,29 @@ const VotePage = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
-          {!votedCandidate && (
+          {/* Submit Button - Only show when a candidate is selected and not yet voted */}
+          {selectedCandidate && !votedCandidate && (
             <div className="fixed bottom-8 left-0 right-0 px-4 z-50">
               <div className="max-w-md mx-auto">
                 <button
                   onClick={handleSubmitVote}
-                  disabled={!selectedCandidate || isSubmitting}
+                  disabled={isSubmitting}
                   className={`
                     w-full py-4 rounded-xl font-bold text-white shadow-xl
                     transition-all duration-300 transform hover:scale-[1.02]
                     flex items-center justify-center space-x-2
-                    ${
-                      selectedCandidate
-                        ? "bg-slate-500 hover:from-purple-700 hover:to-indigo-700"
-                        : "bg-gray-400 cursor-not-allowed"
-                    }
+                    bg-gradient-to-r from-purple-600 to-indigo-600 
+                    hover:from-purple-700 hover:to-indigo-700
+                    ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}
                   `}
                 >
                   {isSubmitting ? (
                     <LoadingSpinner size="sm" />
                   ) : (
-                    <>
+                    <div className="flex items-center gap-2">
                       <span className="text-lg">Submit Vote</span>
                       <ChevronRight className="h-5 w-5" />
-                    </>
+                    </div>
                   )}
                 </button>
               </div>
