@@ -11,7 +11,7 @@ const NotificationDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Bell className="size-7 cursor-pointer rounded-md text-white/50 py-1 px-1" />
+        <Bell className="size-6 cursor-pointer rounded-md text-white/50 py-1 px-1" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 p-4 bg-white shadow-lg rounded-lg">
         <div className="mb-2">

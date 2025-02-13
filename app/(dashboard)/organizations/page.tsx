@@ -39,7 +39,7 @@ const Organization = () => {
       <div className="fixed top-0 bg-white z-10 py-1 px-4">
         <div className="mt-28 flex">
           <NewOrganizationDialog
-            label="Create a new organization"
+            label="Organization"
             onSuccess={(Org) => handleNewOrganization(Org)}
           />
           <div className="lg:w-60 w-full z-50 px-4 lg:hidden md:hidden">

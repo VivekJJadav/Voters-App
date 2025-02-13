@@ -228,7 +228,7 @@ const VotePage = () => {
                     flex items-center justify-center space-x-2
                     ${
                       selectedCandidate
-                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                        ? "bg-slate-500 hover:from-purple-700 hover:to-indigo-700"
                         : "bg-gray-400 cursor-not-allowed"
                     }
                   `}

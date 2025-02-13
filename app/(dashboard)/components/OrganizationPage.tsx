@@ -53,7 +53,6 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
           <div className="p-4 md:p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Active Votes</h2>
-              <NewVotingDialog label="New vote" />
             </div>
             <div className="space-y-3">
               {votes.map((vote) => (
@@ -149,29 +148,34 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col pt-20">
+<div className="min-h-screen flex flex-col pt-10 lg:pt-0">
       <header className="border-b bg-white px-4 md:px-6 py-4">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-xl md:text-2xl font-semibold mb-4">{currentOrg.name}</h1>
-          <div className="flex gap-2 overflow-x-auto pb-2 -mb-2">
+          <div className="flex justify-between">
+            <h1 className="text-xl md:text-2xl lg:ml-0 ml-5 font-semibold mb-4">
+              {currentOrg.name}
+            </h1>
+            <NewVotingDialog label="Vote" />
+          </div>
+          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-4 justify-between md:justify-start md:pb-2 md:flex-wrap md:overflow-visible">
             <Button
               variant={activeTab === "votes" ? "default" : "outline"}
               onClick={() => setActiveTab("votes")}
-              className="whitespace-nowrap"
+              className="flex-1 md:flex-none whitespace-nowrap"
             >
               Votes ({votes.length})
             </Button>
             <Button
               variant={activeTab === "departments" ? "default" : "outline"}
               onClick={() => setActiveTab("departments")}
-              className="whitespace-nowrap"
+              className="flex-1 md:flex-none whitespace-nowrap"
             >
               Departments ({departments.length})
             </Button>
             <Button
               variant={activeTab === "members" ? "default" : "outline"}
               onClick={() => setActiveTab("members")}
-              className="whitespace-nowrap"
+              className="flex-1 md:flex-none whitespace-nowrap"
             >
               Members ({voters.length})
             </Button>
@@ -180,7 +184,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
       </header>
 
       <main className="flex-1 overflow-y-auto">{renderContent()}</main>
-    </div>
+    </div>
   );
 };
 

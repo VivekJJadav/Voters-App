@@ -111,8 +111,8 @@ const Navbar = () => {
               <Image
                 src="/voterlogo.svg"
                 alt="Logo"
-                width={60}
-                height={60}
+                width={100}
+                height={100}
                 className="object-contain"
                 priority
               />
