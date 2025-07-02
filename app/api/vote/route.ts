@@ -61,8 +61,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json(newVote, { status: 201 });
   } catch (error) {
-    console.error("Detailed error:", error);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("Detailed error:", error, error instanceof Error ? error.stack : "");
+    } else {
+      console.error("Detailed error:", error);
+    }
     if (error instanceof Error && error.message.includes("@@unique")) {
       return NextResponse.json(
         {
@@ -72,11 +75,10 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
     return NextResponse.json(
       {
         error: "Failed to create vote",
-        details: error instanceof Error ? error.message : String(error),
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

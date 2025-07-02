@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 
-export function Home() {
+export default function Home() {
   const user = useAuthStore((state) => state.user);
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
@@ -71,5 +71,3 @@ export function Home() {
     </div>
   );
 }
-
-export default Home;

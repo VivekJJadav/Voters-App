@@ -136,7 +136,11 @@ export async function POST(request: Request) {
       failedCount: failedEmails.length,
     });
   } catch (error) {
-    console.error("Email sending error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Email sending error:", error, error instanceof Error ? error.stack : "");
+    } else {
+      console.error("Email sending error:", error);
+    }
     return NextResponse.json(
       { error: "Failed to process invitation request" },
       { status: 500 }

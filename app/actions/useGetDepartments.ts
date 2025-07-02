@@ -100,7 +100,6 @@ const useGetDepartments = (organizationId: string) => {
       } catch (error) {
         console.error("Error fetching departments:", error);
         setError("Failed to fetch departments. Please try again later.");
-        setDepartments([]);
       } finally {
         setLoading(false);
       }

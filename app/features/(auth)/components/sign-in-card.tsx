@@ -60,6 +60,7 @@ export const SignInCard = () => {
         window.location.href = "/home";
       }
     } catch (error) {
+      // Robust error handling for all cases
       if (axios.isAxiosError(error)) {
         console.error("Error response data:", error.response?.data);
         alert(error.response?.data?.error || "Sign-in failed.");

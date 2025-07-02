@@ -120,7 +120,6 @@ const useGetVoters = (organizationId: string) => {
             return;
           }
           setError(error.response?.data?.error || "Failed to fetch voters");
-          setVoters([]);
         } finally {
           setVotersLoading(false);
         }

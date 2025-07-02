@@ -67,7 +67,6 @@ const useGetOrganizations = () => {
       } catch (error) {
         console.error("Error fetching organizations:", error);
         setError("Failed to fetch organizations. Please try again later.");
-        setOrganizations([]);
       } finally {
         setLoading(false);
       }

@@ -145,8 +145,11 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Registration error:", error);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("Registration error:", error, error instanceof Error ? error.stack : "");
+    } else {
+      console.error("Registration error:", error);
+    }
     if (error instanceof Error) {
       if (error.message.includes("foreign key constraint")) {
         return NextResponse.json(
@@ -155,7 +158,6 @@ export async function POST(req: Request) {
         );
       }
     }
-
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }

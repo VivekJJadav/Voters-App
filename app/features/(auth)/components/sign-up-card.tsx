@@ -58,14 +58,13 @@ export const SignUpCard = () => {
         toast.success("Registration successful! Please sign in.");
       }
     } catch (error: any) {
+      // Robust error handling for all cases
       console.error("Registration error:", error);
-
       if (error.response?.status === 409) {
         router.push(`/sign-in?email=${encodeURIComponent(values.email)}`);
         toast.error("Email already exists. Please sign in.");
         return;
       }
-
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);

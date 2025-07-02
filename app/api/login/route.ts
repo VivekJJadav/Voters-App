@@ -134,8 +134,11 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("Login error:", error);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("Login error:", error, error instanceof Error ? error.stack : "");
+    } else {
+      console.error("Login error:", error);
+    }
     if (error instanceof Error) {
       if (error.message.includes("unique constraint")) {
         return NextResponse.json(
@@ -150,7 +153,6 @@ export async function POST(request: Request) {
         );
       }
     }
-
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
