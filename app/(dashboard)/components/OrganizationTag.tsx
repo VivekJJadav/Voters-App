@@ -26,7 +26,7 @@ const OrganizationTag = ({
       onKeyDown={(e) => e.key === "Enter" && setSelectedOrgId(org.id)}
       className={cn(
         "cursor-pointer p-4 rounded-lg border transition-all",
-        "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500",
+        "hover:shadow-md focus:outline-none focus:shadow-slate-800 focus:ring-gray-500",
         "border-gray-200 bg-white text-gray-800",
         isSelected && "bg-gray-800 border-gray-900 text-white",
         className,
