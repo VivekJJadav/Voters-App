@@ -79,16 +79,12 @@ export const SignInCard = () => {
       <Card className="w-full h-full md:w-[487px] border-none shadow-none">
         {/* Logo Section - Adjusted for SVG */}
         <div className="flex justify-center pt-6 px-4 sm:pt-8">
-          <div className="relative w-full max-w-[180px] sm:max-w-[200px] aspect-[4/1]">
+          <div className="relative w-full lg:max-w-0 sm:max-w-[200px] aspect-[4/1]">
             <Image
-              src="/voterlogo.svg" // Update with your SVG path
+              src="/voterlogo.jpeg" // Update with your SVG path
               alt="Company Logo"
               width={200}
-              height={50}
-              style={{
-                width: '100%',
-                height: 'auto',
-              }}
+              height={200}
               className="object-contain"
               priority
             />
