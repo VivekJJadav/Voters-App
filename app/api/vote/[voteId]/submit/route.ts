@@ -161,30 +161,37 @@ export async function POST(
       });
 
       // Determine and mark the winner
-      const voteResults = await tx.voteResult.findMany({
+      // 1. Aggregate total votes per candidate for this vote
+      const candidateVoteCounts = await tx.voteResult.groupBy({
+        by: ['candidateId'],
         where: { voteId },
+        _sum: { voteCount: true },
       });
 
-      const maxVotes = Math.max(...voteResults.map((r) => r.voteCount));
+      // 2. Find the max total votes
+      const maxVotes = Math.max(...candidateVoteCounts.map(c => c._sum.voteCount || 0));
 
-      // If multiple candidates have the max votes, mark none as winner
+      // 3. Find candidateIds with maxVotes
+      const winningCandidateIds = candidateVoteCounts
+        .filter(c => (c._sum.voteCount || 0) === maxVotes)
+        .map(c => c.candidateId);
+
+      // 4. Mark all voteResults for winning candidates as isWinner: true
       await tx.voteResult.updateMany({
         where: {
           voteId,
-          voteCount: maxVotes,
+          candidateId: { in: winningCandidateIds },
         },
         data: {
-          isWinner:
-            voteResults.filter((r) => r.voteCount === maxVotes).length > 1
-              ? false
-              : true,
+          isWinner: true,
         },
       });
 
+      // 5. Mark all voteResults for non-winning candidates as isWinner: false
       await tx.voteResult.updateMany({
         where: {
           voteId,
-          voteCount: { not: maxVotes },
+          candidateId: { notIn: winningCandidateIds },
         },
         data: {
           isWinner: false,

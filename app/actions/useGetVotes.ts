@@ -44,10 +44,10 @@ const useGetVotes = (organizationId: string): UseGetVotesProps => {
         headers: { organizationId, userId: user.id },
       });
       setVotes(response.data || []);
+      setError(null);
     } catch (err) {
       console.error("Error fetching votes:", err);
       setError("Failed to fetch votes. Please try again later.");
-      setVotes([]);
     } finally {
       setLoading(false);
     }

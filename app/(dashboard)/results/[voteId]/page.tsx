@@ -90,30 +90,31 @@ const Result = () => {
             <div className="inline-flex items-center px-6 py-3 bg-white rounded-2xl shadow-md backdrop-blur-sm bg-opacity-90">
               <Trophy className="w-5 h-5 mr-2 text-violet-600" />
               <span className="text-gray-700 font-semibold text-sm sm:text-base">
-                Total Votes: {results.totalVotes.toLocaleString()}
+                Winner: {results.candidates.filter((candidate) => candidate.isWinner).map((candidate) => candidate.name)}
               </span>
             </div>
           </div>
         </header>
 
         {/* Main content - side by side on larger screens */}
-        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+        <div className="">
           {/* Chart Section */}
-          <div className="mb-8 lg:mb-0">
+          {/* <div className="mb-8 lg:mb-0">
             <div className="bg-white p-6 rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 h-full">
               <ResultChart candidates={results.candidates} totalVotes={results.totalVotes} />
             </div>
-          </div>
+          </div> */}
 
           {/* Candidates Section */}
-          <div className="space-y-6">
+          <div className="flex flex-wrap gap-6 justify-center items-stretch w-full">
             {sortedCandidates.map((candidate) => (
               <div
                 key={candidate.id}
-                className={`bg-white rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 p-6 relative 
+                className={`flex-1 min-w-[280px] max-w-xs bg-white rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90 p-6 relative 
                   transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl
                   ${candidate.isWinner ? "ring-2 ring-yellow-400" : ""}
                 `}
+                style={{ flexBasis: '320px' }}
               >
                 {candidate.isWinner && (
                   <div className="absolute -top-3 -right-3 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full p-2 shadow-lg">

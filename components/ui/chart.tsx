@@ -28,6 +28,13 @@ function useChart() {
   const context = React.useContext(ChartContext)
 
   if (!context) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[Voters-App] useChart must be used within a <ChartContainer />. Returning fallback context."
+      );
+      // Fallback: return a dummy context to avoid crash in dev
+      return { config: {} };
+    }
     throw new Error("useChart must be used within a <ChartContainer />")
   }
 

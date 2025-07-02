@@ -40,6 +40,16 @@ export const SelectedOrganizationProvider = ({
 export const useSelectedOrganization = () => {
   const context = useContext(SelectedOrganizationContext);
   if (!context) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[Voters-App] useSelectedOrganization must be used within a SelectedOrganizationProvider. Returning fallback context."
+      );
+      // Fallback: return a dummy context to avoid crash in dev
+      return {
+        selectedOrgId: null,
+        setSelectedOrgId: () => {},
+      };
+    }
     throw new Error(
       "useSelectedOrganization must be used within a SelectedOrganizationProvider"
     );

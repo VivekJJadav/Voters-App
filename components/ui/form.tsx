@@ -46,12 +46,25 @@ const useFormField = () => {
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState, formState } = useFormContext()
 
-  const fieldState = getFieldState(fieldContext.name, formState)
-
   if (!fieldContext) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[Voters-App] useFormField should be used within <FormField>. Returning fallback context."
+      );
+      // Fallback: return a dummy context to avoid crash in dev
+      return {
+        id: "fallback-id",
+        name: "fallback-name",
+        formItemId: "fallback-form-item",
+        formDescriptionId: "fallback-form-item-description",
+        formMessageId: "fallback-form-item-message",
+        error: undefined,
+      };
+    }
     throw new Error("useFormField should be used within <FormField>")
   }
 
+  const fieldState = getFieldState(fieldContext.name, formState)
   const { id } = itemContext
 
   return {

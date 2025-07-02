@@ -62,7 +62,7 @@ const Vote = () => {
 
   if (organizations.length === 0) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center p-4 mt-24">
+      <div className="min-h-screen w-full flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6">
             <p className="text-center text-gray-600">You are not a member of any organization.</p>
@@ -88,7 +88,7 @@ const Vote = () => {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto w-full px-4 md:px-6 pt-48 pb-8 space-y-4">
+      <div className="max-w-3xl mx-auto w-full px-4 md:px-6 pb-8 space-y-4 pt-44">
         {votes.map((vote) => (
           <Card 
             key={vote.id} 
