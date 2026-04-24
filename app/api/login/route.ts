@@ -39,45 +39,43 @@ export async function POST(request: Request) {
     }
 
     if (organizationId || departmentId) {
-      await client.$transaction(async (tx) => {
-        if (organizationId) {
-          const existingMembership = await tx.organizationMember.findFirst({
-            where: {
+      if (organizationId) {
+        const existingMembership = await client.organizationMember.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: organizationId,
+          },
+        });
+
+        if (!existingMembership) {
+          await client.organizationMember.create({
+            data: {
               userId: user.id,
               organizationId: organizationId,
+              role: "MEMBER",
+            },
+          });
+        }
+      }
+
+      if (departmentId) {
+        const existingDepartmentMembership =
+          await client.userDepartment.findFirst({
+            where: {
+              userId: user.id,
+              departmentId: departmentId,
             },
           });
 
-          if (!existingMembership) {
-            await tx.organizationMember.create({
-              data: {
-                userId: user.id,
-                organizationId: organizationId,
-                role: "MEMBER",
-              },
-            });
-          }
+        if (!existingDepartmentMembership) {
+          await client.userDepartment.create({
+            data: {
+              userId: user.id,
+              departmentId: departmentId,
+            },
+          });
         }
-
-        if (departmentId) {
-          const existingDepartmentMembership =
-            await tx.userDepartment.findFirst({
-              where: {
-                userId: user.id,
-                departmentId: departmentId,
-              },
-            });
-
-          if (!existingDepartmentMembership) {
-            await tx.userDepartment.create({
-              data: {
-                userId: user.id,
-                departmentId: departmentId,
-              },
-            });
-          }
-        }
-      });
+      }
     }
 
     const updatedUser = await client.user.findUnique({

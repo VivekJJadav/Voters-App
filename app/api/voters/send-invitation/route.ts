@@ -20,6 +20,9 @@ export async function POST(request: Request) {
   try {
     const { emails, names, organizationId, departmentId } =
       await request.json();
+    const appUrl = (
+      process.env.NEXT_PUBLIC_APP_URL || "https://voters-app-henna.vercel.app"
+    ).replace(/\/$/, "");
 
     if (!emails?.length || !names?.length || !organizationId) {
       return NextResponse.json(
@@ -76,9 +79,7 @@ export async function POST(request: Request) {
           ...(departmentId && { departmentId }),
         });
 
-        const link = `${
-          process.env.NEXT_PUBLIC_APP_URL
-        }/${redirectPath}?${urlParams.toString()}`;
+        const link = `${appUrl}/${redirectPath}?${urlParams.toString()}`;
 
         await transporter.sendMail({
           from: "thevoters001@gmail.com",
@@ -110,43 +111,41 @@ export async function POST(request: Request) {
         });
 
         if (existingUser) {
-          await client.$transaction(async (tx) => {
-            const existingMembership = await tx.organizationMember.findFirst({
-              where: {
+          const existingMembership = await client.organizationMember.findFirst({
+            where: {
+              userId: existingUser.id,
+              organizationId,
+            },
+          });
+
+          if (!existingMembership) {
+            await client.organizationMember.create({
+              data: {
                 userId: existingUser.id,
                 organizationId,
+                role: "MEMBER",
               },
             });
+          }
 
-            if (!existingMembership) {
-              await tx.organizationMember.create({
+          if (departmentId) {
+            const existingDepartmentMembership =
+              await client.userDepartment.findFirst({
+                where: {
+                  userId: existingUser.id,
+                  departmentId,
+                },
+              });
+
+            if (!existingDepartmentMembership) {
+              await client.userDepartment.create({
                 data: {
                   userId: existingUser.id,
-                  organizationId,
-                  role: "MEMBER",
+                  departmentId,
                 },
               });
             }
-
-            if (departmentId) {
-              const existingDepartmentMembership =
-                await tx.userDepartment.findFirst({
-                  where: {
-                    userId: existingUser.id,
-                    departmentId,
-                  },
-                });
-
-              if (!existingDepartmentMembership) {
-                await tx.userDepartment.create({
-                  data: {
-                    userId: existingUser.id,
-                    departmentId,
-                  },
-                });
-              }
-            }
-          });
+          }
         }
 
         results.push({ email, success: true });

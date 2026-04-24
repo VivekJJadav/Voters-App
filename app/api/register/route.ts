@@ -137,60 +137,54 @@ export async function POST(req: Request) {
 
         userId = existingUser.id;
       } else {
-        await client.$transaction(async (tx) => {
-          await tx.organizationMember.create({
+        await client.organizationMember.create({
+          data: {
+            userId: existingUser.id,
+            organizationId,
+            role: "MEMBER",
+          },
+        });
+
+        if (departmentId) {
+          await client.userDepartment.create({
             data: {
               userId: existingUser.id,
-              organizationId,
-              role: "MEMBER",
+              departmentId,
             },
           });
-
-          if (departmentId) {
-            await tx.userDepartment.create({
-              data: {
-                userId: existingUser.id,
-                departmentId,
-              },
-            });
-          }
-        });
+        }
 
         userId = existingUser.id;
       }
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const newUser = await client.$transaction(async (tx) => {
-        const user = await tx.user.create({
+      const newUser = await client.user.create({
+        data: {
+          name,
+          email,
+          hashedPassword,
+        },
+      });
+
+      if (organizationId) {
+        await client.organizationMember.create({
           data: {
-            name,
-            email,
-            hashedPassword,
+            userId: newUser.id,
+            organizationId,
+            role: "MEMBER",
           },
         });
+      }
 
-        if (organizationId) {
-          await tx.organizationMember.create({
-            data: {
-              userId: user.id,
-              organizationId,
-              role: "MEMBER",
-            },
-          });
-        }
-
-        if (departmentId) {
-          await tx.userDepartment.create({
-            data: {
-              userId: user.id,
-              departmentId: departmentId,
-            },
-          });
-        }
-
-        return user;
-      });
+      if (departmentId) {
+        await client.userDepartment.create({
+          data: {
+            userId: newUser.id,
+            departmentId,
+          },
+        });
+      }
 
       userId = newUser.id;
     }
