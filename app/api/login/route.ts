@@ -5,11 +5,25 @@ import client from "@/app/libs/prismadb";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_super_secret_key";
 const TOKEN_EXPIRATION = "1h";
+const objectIdPattern = /^[a-f\d]{24}$/i;
+
+const getStringValue = (value: unknown) =>
+  typeof value === "string" ? value.trim() : "";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, organizationId, departmentId } = body;
+    const email = getStringValue(body.email).toLowerCase();
+    const password = getStringValue(body.password);
+    const organizationId = getStringValue(body.organizationId);
+    const departmentId = getStringValue(body.departmentId);
+
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
 
     const user = await client.user.findUnique({
       where: { email },
@@ -38,8 +52,41 @@ export async function POST(request: Request) {
       );
     }
 
+    if (organizationId && !objectIdPattern.test(organizationId)) {
+      return NextResponse.json(
+        { error: "Invalid organization invitation link" },
+        { status: 400 }
+      );
+    }
+
+    if (departmentId && !objectIdPattern.test(departmentId)) {
+      return NextResponse.json(
+        { error: "Invalid department invitation link" },
+        { status: 400 }
+      );
+    }
+
+    if (departmentId && !organizationId) {
+      return NextResponse.json(
+        { error: "Department invitations require an organization" },
+        { status: 400 }
+      );
+    }
+
     if (organizationId || departmentId) {
       if (organizationId) {
+        const organization = await client.organization.findUnique({
+          where: { id: organizationId },
+          select: { id: true },
+        });
+
+        if (!organization) {
+          return NextResponse.json(
+            { error: "Organization invitation is no longer valid" },
+            { status: 404 }
+          );
+        }
+
         const existingMembership = await client.organizationMember.findFirst({
           where: {
             userId: user.id,
@@ -59,6 +106,21 @@ export async function POST(request: Request) {
       }
 
       if (departmentId) {
+        const department = await client.department.findFirst({
+          where: {
+            id: departmentId,
+            organizationId,
+          },
+          select: { id: true },
+        });
+
+        if (!department) {
+          return NextResponse.json(
+            { error: "Department invitation is no longer valid" },
+            { status: 404 }
+          );
+        }
+
         const existingDepartmentMembership =
           await client.userDepartment.findFirst({
             where: {

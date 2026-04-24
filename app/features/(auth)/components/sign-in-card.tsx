@@ -28,6 +28,7 @@ export const SignInCard = () => {
 
   const searchParams = useSearchParams();
   const organizationId = searchParams.get("organizationId");
+  const departmentId = searchParams.get("departmentId");
 
   const form = useForm({
     defaultValues: {
@@ -44,6 +45,7 @@ export const SignInCard = () => {
       const response = await axios.post("/api/login", {
         ...values,
         organizationId: organizationId || undefined,
+        departmentId: departmentId || undefined,
       });
 
       console.log("Login response:", response.data); // Check what's coming back
