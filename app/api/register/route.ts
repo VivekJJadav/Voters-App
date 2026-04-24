@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import client from "@/app/libs/prismadb";
+import { getUserWithMemberships } from "@/app/libs/userMemberships";
 
 const objectIdPattern = /^[a-f\d]{24}$/i;
 
@@ -189,25 +190,7 @@ export async function POST(req: Request) {
       userId = newUser.id;
     }
 
-    const completeUser = await client.user.findUnique({
-      where: { id: userId },
-      include: {
-        organizations: {
-          include: {
-            organization: {
-              include: {
-                departments: true,
-              },
-            },
-          },
-        },
-        departments: {
-          include: {
-            department: true,
-          },
-        },
-      },
-    });
+    const completeUser = await getUserWithMemberships(userId);
 
     return NextResponse.json(
       {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import * as jose from "jose";
 import client from "@/app/libs/prismadb";
+import { getUserWithMemberships } from "@/app/libs/userMemberships";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_super_secret_key";
 const TOKEN_EXPIRATION = "1h";
@@ -27,13 +28,6 @@ export async function POST(request: Request) {
 
     const user = await client.user.findUnique({
       where: { email },
-      include: {
-        organizations: {
-          include: {
-            organization: true,
-          },
-        },
-      },
     });
 
     if (!user || !user.hashedPassword) {
@@ -140,25 +134,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const updatedUser = await client.user.findUnique({
-      where: { id: user.id },
-      include: {
-        organizations: {
-          include: {
-            organization: {
-              include: {
-                departments: true,
-              },
-            },
-          },
-        },
-        departments: {
-          include: {
-            department: true,
-          },
-        },
-      },
-    });
+    const updatedUser = await getUserWithMemberships(user.id);
 
     const token = await new jose.SignJWT({
       id: user.id,
