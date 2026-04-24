@@ -11,8 +11,8 @@ interface SendInvitationResult {
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "thevoters001@gmail.com", 
-    pass: process.env.GMAIL_APP_PASSWORD, 
+    user: "thevoters001@gmail.com",
+    pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
 
@@ -33,8 +33,11 @@ export async function POST(request: Request) {
         where: { id: organizationId },
       }),
       departmentId
-        ? client.department.findUnique({
-            where: { id: departmentId },
+        ? client.department.findFirst({
+            where: {
+              id: departmentId,
+              organizationId,
+            },
             select: { id: true, name: true },
           })
         : null,
@@ -43,6 +46,13 @@ export async function POST(request: Request) {
     if (!organization) {
       return NextResponse.json(
         { error: "Organization not found" },
+        { status: 404 }
+      );
+    }
+
+    if (departmentId && !department) {
+      return NextResponse.json(
+        { error: "Department not found in this organization" },
         { status: 404 }
       );
     }
@@ -71,7 +81,7 @@ export async function POST(request: Request) {
         }/${redirectPath}?${urlParams.toString()}`;
 
         await transporter.sendMail({
-          from: "thevoters001@gmail.com", 
+          from: "thevoters001@gmail.com",
           to: email,
           subject: existingUser
             ? `Sign in to join ${organization.name}`
@@ -99,12 +109,43 @@ export async function POST(request: Request) {
               }! ${link}`,
         });
 
-        if (existingUser && departmentId) {
-          await client.userDepartment.create({
-            data: {
-              userId: existingUser.id,
-              departmentId,
-            },
+        if (existingUser) {
+          await client.$transaction(async (tx) => {
+            const existingMembership = await tx.organizationMember.findFirst({
+              where: {
+                userId: existingUser.id,
+                organizationId,
+              },
+            });
+
+            if (!existingMembership) {
+              await tx.organizationMember.create({
+                data: {
+                  userId: existingUser.id,
+                  organizationId,
+                  role: "MEMBER",
+                },
+              });
+            }
+
+            if (departmentId) {
+              const existingDepartmentMembership =
+                await tx.userDepartment.findFirst({
+                  where: {
+                    userId: existingUser.id,
+                    departmentId,
+                  },
+                });
+
+              if (!existingDepartmentMembership) {
+                await tx.userDepartment.create({
+                  data: {
+                    userId: existingUser.id,
+                    departmentId,
+                  },
+                });
+              }
+            }
           });
         }
 

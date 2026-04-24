@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import * as jose from "jose";
 import client from "@/app/libs/prismadb";
 
