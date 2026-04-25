@@ -97,7 +97,7 @@ const NewOrganizationDialog = ({ label, onSuccess }: NewVotingDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full sm:w-auto bg-black text-white">
+        <Button className="w-full sm:w-auto">
           <Plus className="size-4 mr-2" /> {label}
         </Button>
       </DialogTrigger>

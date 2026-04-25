@@ -20,9 +20,7 @@ export async function POST(request: Request) {
   try {
     const { emails, names, organizationId, departmentId } =
       await request.json();
-    const appUrl = (
-      process.env.NEXT_PUBLIC_APP_URL || "https://voters-app-henna.vercel.app"
-    ).replace(/\/$/, "");
+    const appUrl = new URL(request.url).origin;
 
     if (!emails?.length || !names?.length || !organizationId) {
       return NextResponse.json(
@@ -76,7 +74,9 @@ export async function POST(request: Request) {
           email: email,
           name: name,
           organizationId: organizationId,
+          organizationName: organization.name,
           ...(departmentId && { departmentId }),
+          ...(department && { departmentName: department.name }),
         });
 
         const link = `${appUrl}/${redirectPath}?${urlParams.toString()}`;

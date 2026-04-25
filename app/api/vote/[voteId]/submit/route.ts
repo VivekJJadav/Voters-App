@@ -3,6 +3,8 @@ import client from "@/app/libs/prismadb";
 import * as jose from "jose";
 import { cookies } from "next/headers";
 
+const JWT_SECRET = process.env.JWT_SECRET || "your_super_secret_key";
+
 interface TokenPayload {
   id: string;
   email: string;
@@ -16,9 +18,11 @@ export async function POST(
 ) {
   try {
     const cookieStore = cookies();
-    const token = cookieStore.get("authToken")?.value;
-
-    console.log("Token from cookie:", token);
+    const authorizationHeader = request.headers.get("authorization");
+    const bearerToken = authorizationHeader?.startsWith("Bearer ")
+      ? authorizationHeader.slice("Bearer ".length)
+      : null;
+    const token = cookieStore.get("authToken")?.value || bearerToken;
 
     if (!token) {
       return NextResponse.json(
@@ -31,7 +35,7 @@ export async function POST(
     try {
       const { payload } = await jose.jwtVerify(
         token,
-        new TextEncoder().encode(process.env.JWT_SECRET)
+        new TextEncoder().encode(JWT_SECRET)
       );
 
       if (typeof payload.id !== "string" || typeof payload.email !== "string") {
@@ -69,44 +73,71 @@ export async function POST(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const [vote, existingResult] = await Promise.all([
-      client.vote.findUnique({
-        where: { id: voteId },
-        include: {
-          candidates: true,
-        },
-      }),
-      client.voteResult.findFirst({
-        where: {
-          voteId,
-          userId: user.id, // Check by user instead of candidateId
-        },
-      }),
-    ]);
+    const vote = await client.vote.findUnique({
+      where: { id: voteId },
+      include: {
+        candidates: true,
+      },
+    });
 
     if (!vote) {
       return NextResponse.json({ error: "Vote not found" }, { status: 404 });
     }
 
-    if (!vote.isActive) {
+    const membership = await client.organizationMember.findFirst({
+      where: {
+        userId: user.id,
+        organizationId: vote.organizationId,
+      },
+    });
+
+    if (!membership) {
       return NextResponse.json(
-        { error: "This vote is no longer active" },
+        { error: "User is not a member of this organization" },
+        { status: 403 }
+      );
+    }
+
+    if (vote.departmentId) {
+      const departmentMembership = await client.userDepartment.findFirst({
+        where: {
+          userId: user.id,
+          departmentId: vote.departmentId,
+        },
+      });
+
+      if (!departmentMembership) {
+        return NextResponse.json(
+          { error: "User is not a member of this department" },
+          { status: 403 }
+        );
+      }
+    }
+
+    const now = new Date();
+    const startTime = new Date(vote.startTime);
+    const effectiveEndTime = vote.extendedTime || vote.endTime;
+
+    if (startTime > now) {
+      return NextResponse.json(
+        { error: "This vote has not started yet" },
         { status: 400 }
       );
     }
 
-    if (vote.endTime && new Date(vote.endTime) < new Date()) {
+    if (effectiveEndTime && new Date(effectiveEndTime) <= now) {
       return NextResponse.json(
         { error: "This vote has ended" },
         { status: 400 }
       );
     }
 
-    const isValidCandidate = vote.candidates.some(
-      (candidate) => candidate.id === candidateId
+    const selectedCandidate = vote.candidates.find(
+      (candidate) =>
+        candidate.id === candidateId || candidate.userId === candidateId
     );
 
-    if (!isValidCandidate) {
+    if (!selectedCandidate) {
       return NextResponse.json({ error: "Invalid candidate" }, { status: 400 });
     }
 
@@ -124,9 +155,20 @@ export async function POST(
       );
     }
 
-    // Replace the existing vote submission transaction with:
+    const normalizeCandidateId = (id: string) => {
+      const candidate = vote.candidates.find(
+        (candidate) => candidate.userId === id || candidate.id === id
+      );
+
+      return candidate?.userId || id;
+    };
+
+    const candidateIdsForUsers = (userIds: string[]) =>
+      vote.candidates
+        .filter((candidate) => userIds.includes(candidate.userId))
+        .flatMap((candidate) => [candidate.userId, candidate.id]);
+
     const result = await client.$transaction(async (tx) => {
-      // Check if user has already voted in this vote
       const existingUserVote = await tx.voteResult.findFirst({
         where: {
           voteId,
@@ -138,11 +180,10 @@ export async function POST(
         throw new Error("You have already voted in this vote");
       }
 
-      // Create new vote result for the candidate
       const voteResult = await tx.voteResult.create({
         data: {
           voteId,
-          candidateId,
+          candidateId: selectedCandidate.userId,
           userId: user.id,
           voteCount: 1,
           statistics: {
@@ -160,23 +201,34 @@ export async function POST(
         },
       });
 
-      // Determine and mark the winner
-      // 1. Aggregate total votes per candidate for this vote
-      const candidateVoteCounts = await tx.voteResult.groupBy({
-        by: ['candidateId'],
+      const voteResults = await tx.voteResult.findMany({
         where: { voteId },
-        _sum: { voteCount: true },
+        select: {
+          candidateId: true,
+          voteCount: true,
+        },
       });
 
-      // 2. Find the max total votes
-      const maxVotes = Math.max(...candidateVoteCounts.map(c => c._sum.voteCount || 0));
+      const totalsByCandidateUserId = voteResults.reduce<Map<string, number>>(
+        (totals, voteResult) => {
+          const normalizedCandidateId = normalizeCandidateId(
+            voteResult.candidateId
+          );
+          totals.set(
+            normalizedCandidateId,
+            (totals.get(normalizedCandidateId) || 0) + voteResult.voteCount
+          );
+          return totals;
+        },
+        new Map()
+      );
 
-      // 3. Find candidateIds with maxVotes
-      const winningCandidateIds = candidateVoteCounts
-        .filter(c => (c._sum.voteCount || 0) === maxVotes)
-        .map(c => c.candidateId);
+      const maxVotes = Math.max(...totalsByCandidateUserId.values());
+      const winningCandidateUserIds = [...totalsByCandidateUserId.entries()]
+        .filter(([, voteCount]) => voteCount === maxVotes)
+        .map(([candidateUserId]) => candidateUserId);
 
-      // 4. Mark all voteResults for winning candidates as isWinner: true
+      const winningCandidateIds = candidateIdsForUsers(winningCandidateUserIds);
       await tx.voteResult.updateMany({
         where: {
           voteId,
@@ -187,7 +239,6 @@ export async function POST(
         },
       });
 
-      // 5. Mark all voteResults for non-winning candidates as isWinner: false
       await tx.voteResult.updateMany({
         where: {
           voteId,
@@ -239,20 +290,40 @@ export async function GET(
       return NextResponse.json({ error: "Vote not found" }, { status: 404 });
     }
 
+    const now = new Date();
+    const effectiveEndTime = vote.extendedTime || vote.endTime;
+    const hasEnded = Boolean(effectiveEndTime && effectiveEndTime <= now);
+
+    if (!hasEnded) {
+      return NextResponse.json(
+        { error: "Results will be announced after the vote has ended" },
+        { status: 403 }
+      );
+    }
+
     // Then get the candidates data separately
     const candidatesWithResults = await Promise.all(
       vote.candidates.map(async (candidate) => {
         const candidateVotes = vote.results.filter(
-          result => result.candidateId === candidate.id
+          (result) =>
+            result.candidateId === candidate.userId ||
+            result.candidateId === candidate.id
         );
-    
-        const totalVotes = candidateVotes.reduce((sum, result) => sum + result.voteCount, 0);
-    
+
+        const totalVotes = candidateVotes.reduce(
+          (sum, result) => sum + result.voteCount,
+          0
+        );
+        const slogan = vote.slogans.find(
+          (slogan) => slogan.userId === candidate.userId
+        );
+
         return {
           id: candidate.id,
           name: candidate.user.name,
+          slogan: slogan?.content || "",
           votes: totalVotes,
-          isWinner: candidateVotes.some(result => result.isWinner),
+          isWinner: candidateVotes.some((result) => result.isWinner),
         };
       })
     );
@@ -268,8 +339,8 @@ export async function GET(
       voteName: vote.name,
       totalVotes,
       candidates: candidatesWithResults,
-      endDate: vote.endTime,
-      isActive: vote.isActive,
+      endDate: effectiveEndTime,
+      isActive: false,
     });
   } catch (error) {
     console.error("Error fetching vote results:", error);

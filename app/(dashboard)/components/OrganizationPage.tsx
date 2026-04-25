@@ -31,7 +31,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   if (organizationsLoading || departmentsLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen pt-20">
+      <div className="flex h-full min-h-[320px] items-center justify-center">
         <LoadingSpinner size="md" />
       </div>
     );
@@ -40,7 +40,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   const currentOrg = organizations.find((org) => org.id === orgId);
   if (!currentOrg) {
     return (
-      <div className="flex items-center justify-center min-h-screen pt-20">
+      <div className="flex h-full min-h-[320px] items-center justify-center">
         Select an organization to begin
       </div>
     );
@@ -88,7 +88,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
+          <div className="flex h-full min-h-[320px] items-center justify-center">
             <NewDepartmentDialog
               label="Create a new Department"
               organizationId={currentOrg.id}
@@ -109,7 +109,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
+          <div className="flex h-full min-h-[320px] items-center justify-center">
             <AddMembersDialog organizationId={orgId} />
           </div>
         );
@@ -118,7 +118,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
 
   if (departments.length === 0 && voters.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-4 pt-24">
+      <div className="flex h-full min-h-[420px] items-center justify-center p-4">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="p-6 space-y-8">
             <div className="text-center space-y-4">
@@ -148,8 +148,8 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   }
 
   return (
-<div className="min-h-screen flex flex-col pt-10 lg:pt-0">
-      <header className="border-b bg-white px-4 md:px-6 py-4">
+    <div className="flex h-full min-h-0 flex-col pt-10 lg:pt-0">
+      <header className="shrink-0 border-b bg-white px-4 md:px-6 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between">
             <h1 className="text-xl md:text-2xl lg:ml-0 ml-5 font-semibold mb-4">
@@ -183,8 +183,8 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto">{renderContent()}</main>
-    </div>
+      <main className="min-h-0 flex-1 overflow-y-auto">{renderContent()}</main>
+    </div>
   );
 };
 

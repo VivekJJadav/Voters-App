@@ -1,20 +1,8 @@
-"use client";
-
 import axios from "axios";
 import { useState } from "react";
-import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { useSearchParams, useRouter } from "next/navigation";
-import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -31,6 +19,7 @@ export const SignUpCard = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -38,6 +27,8 @@ export const SignUpCard = () => {
       email: searchParams.get("email") || "",
       organizationId: searchParams.get("organizationId") || "",
       departmentId: searchParams.get("departmentId") || "",
+      organizationName: searchParams.get("organizationName") || "",
+      departmentName: searchParams.get("departmentName") || "",
       password: "",
     },
   });
@@ -48,6 +39,8 @@ export const SignUpCard = () => {
     password: string;
     organizationId?: string;
     departmentId?: string;
+    organizationName?: string;
+    departmentName?: string;
   }) => {
     setLoading(true);
     try {
@@ -58,7 +51,6 @@ export const SignUpCard = () => {
         toast.success("Registration successful! Please sign in.");
       }
     } catch (error: any) {
-      // Robust error handling for all cases
       console.error("Registration error:", error);
       if (error.response?.status === 409) {
         router.push(`/sign-in?email=${encodeURIComponent(values.email)}`);
@@ -74,57 +66,66 @@ export const SignUpCard = () => {
   const isEmailFromLink = searchParams.has("email");
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Card className="w-full h-full md:w-[487px] border-none shadow-none">
-        {/* Logo Section - Adjusted for SVG */}
-        <div className="flex justify-center pt-6 px-4 sm:pt-8">
-          <div className="relative w-full max-w-[180px] sm:max-w-[200px] aspect-[4/1]">
-            <Image
-              src="/voterlogo.svg" // Update with your SVG path
-              alt="Company Logo"
-              width={200}
-              height={50}
-              style={{
-                width: "100%",
-                height: "auto",
-              }}
-              className="object-contain"
-              priority
-            />
-          </div>
+    <div className="signin-card-wrapper">
+      <div className="signin-card">
+        {/* Logo Section - Visible only on mobile */}
+        <div className="signin-logo-mobile">
+          <Image
+            src="/voterlogo.svg"
+            alt="The Voters Logo"
+            width={140}
+            height={48}
+            className="object-contain signin-logo-img"
+            priority
+          />
         </div>
-        <CardHeader className="flex items-center justify-center text-center p-7">
-          <CardTitle className="text-2xl">Sign Up</CardTitle>
-          <CardDescription>
+
+        {/* Header */}
+        <div className="signin-header">
+          <h1 className="signin-title">Sign Up</h1>
+          <p className="signin-subtitle">
             By signing up, you agree to our{" "}
-            <Link href="/privacy">
-              <span className="text-blue-700">Privacy Policy</span>
+            <Link href="/privacy" className="text-[#667eea] hover:underline">
+              Privacy Policy
             </Link>{" "}
             and{" "}
-            <Link href="/terms">
-              <span className="text-blue-700">Terms of service</span>
+            <Link href="/terms" className="text-[#667eea] hover:underline">
+              Terms of service
             </Link>
-          </CardDescription>
-        </CardHeader>
-        <div className="px-7">
-          <DottedSeparator />
+          </p>
         </div>
-        <CardContent className="p-7">
+
+        {/* Separator */}
+        <div className="signin-separator">
+          <div className="signin-separator-line" />
+          <span className="signin-separator-text">create your account</span>
+          <div className="signin-separator-line" />
+        </div>
+
+        {/* Form */}
+        <div className="signin-form-section">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="signin-form">
               <FormField
                 name="name"
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
+                    <label className="signin-label">Name</label>
                     <FormControl>
-                      <Input
-                        {...field}
-                        type="text"
-                        placeholder="Enter your name"
-                        disabled={isEmailFromLink}
-                        className={isEmailFromLink ? "bg-gray-100" : ""}
-                      />
+                      <div className="signin-input-wrapper">
+                        <svg className="signin-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <Input
+                          {...field}
+                          type="text"
+                          placeholder="Enter your name"
+                          disabled={isEmailFromLink}
+                          className={`signin-input ${isEmailFromLink ? "bg-gray-50" : ""}`}
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -135,14 +136,21 @@ export const SignUpCard = () => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
+                    <label className="signin-label">Email</label>
                     <FormControl>
-                      <Input
-                        {...field}
-                        type="email"
-                        placeholder="Enter email address"
-                        disabled={isEmailFromLink}
-                        className={isEmailFromLink ? "bg-gray-100" : ""}
-                      />
+                      <div className="signin-input-wrapper">
+                        <svg className="signin-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="2" y="4" width="20" height="16" rx="2" />
+                          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                        </svg>
+                        <Input
+                          {...field}
+                          type="email"
+                          placeholder="Enter email address"
+                          disabled={isEmailFromLink}
+                          className={`signin-input ${isEmailFromLink ? "bg-gray-50" : ""}`}
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -153,58 +161,70 @@ export const SignUpCard = () => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
+                    <label className="signin-label">Password</label>
                     <FormControl>
-                      <Input
-                        {...field}
-                        type="password"
-                        placeholder="Enter your password"
-                      />
+                      <div className="signin-input-wrapper">
+                        <svg className="signin-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <Input
+                          {...field}
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          className="signin-input"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="signin-eye-btn"
+                          tabIndex={-1}
+                        >
+                          {showPassword ? (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                              <line x1="1" y1="1" x2="23" y2="23" />
+                            </svg>
+                          ) : (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button disabled={loading} size="lg" className="w-full">
-                {loading ? "Signing up..." : "Sign up"}
+              <Button disabled={loading} size="lg" className="signin-btn">
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Signing up...
+                  </span>
+                ) : (
+                  "Sign up"
+                )}
               </Button>
             </form>
           </Form>
-        </CardContent>
-        <div className="px-7">
-          <DottedSeparator />
         </div>
-        {/* <CardContent className="p-7 flex flex-col gap-y-4">
-          <Button
-            variant="secondary"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
-            <FcGoogle className="mr-2 size-5" />
-            Login with Google
-          </Button>
-          <Button
-            variant="secondary"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
-            <FaGithub className="mr-2 size-5" />
-            Login with Github
-          </Button>
-        </CardContent>
-        <div className="px-7">
-          <DottedSeparator />
-        </div> */}
-        <CardContent className="p-7 flex items-center justify-center">
-          <p>
-            Already have an account?
-            <Link href="/sign-in">
-              <span className="text-blue-700">&nbsp;Sign In</span>
+
+        {/* Footer */}
+        <div className="signin-footer">
+          <p className="signin-footer-text">
+            Already have an account?{" "}
+            <Link href="/sign-in" className="signin-signup-link">
+              Sign In
             </Link>
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

@@ -63,13 +63,13 @@ const DepartmentBlock = ({ orgId }: DepartmentBlockProps) => {
   };
 
   return (
-    <div className="lg:col-span-2 space-y-6">
-      <Card className="hover:shadow-md transition-shadow">
+    <div className="space-y-6 lg:col-span-2">
+      <Card className="border-white/12 bg-white/[0.06] shadow-[0_18px_50px_rgba(15,12,41,0.2)] transition-colors hover:bg-white/[0.075]">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsDepartmentsExpanded(!isDepartmentsExpanded)}
-              className="flex items-center gap-2 group"
+              className="group flex items-center gap-2"
             >
               <div className="space-y-1 text-left">
                 <CardTitle className="text-2xl">Departments</CardTitle>
@@ -99,7 +99,7 @@ const DepartmentBlock = ({ orgId }: DepartmentBlockProps) => {
                     disabled={isLoading}
                     size="sm"
                     variant="ghost"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className="text-red-300 hover:bg-red-500/12 hover:text-red-100"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

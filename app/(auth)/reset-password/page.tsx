@@ -1,9 +1,9 @@
 "use client";
 
-import { SignInCard } from "@/app/features/(auth)/components/sign-in-card";
+import { ResetPasswordCard } from "@/app/features/(auth)/components/reset-password-card";
 import { Suspense } from "react";
 
-const SignInPage = () => {
+const ResetPasswordPage = () => {
   return (
     <Suspense
       fallback={
@@ -12,9 +12,9 @@ const SignInPage = () => {
         </div>
       }
     >
-      <SignInCard />
+      <ResetPasswordCard />
     </Suspense>
   );
 };
 
-export default SignInPage;
+export default ResetPasswordPage;

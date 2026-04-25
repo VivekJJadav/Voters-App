@@ -18,12 +18,20 @@ export async function POST(req: Request) {
     const email = getStringValue(
       body.email || searchParams.get("email")
     ).toLowerCase();
-    const password = getStringValue(body.password || searchParams.get("password"));
-    const organizationId = getStringValue(
+    const password = getStringValue(
+      body.password || searchParams.get("password")
+    );
+    let organizationId = getStringValue(
       body.organizationId || searchParams.get("organizationId")
     );
-    const departmentId = getStringValue(
+    let departmentId = getStringValue(
       body.departmentId || searchParams.get("departmentId")
+    );
+    const organizationName = getStringValue(
+      body.organizationName || searchParams.get("organizationName")
+    );
+    const departmentName = getStringValue(
+      body.departmentName || searchParams.get("departmentName")
     );
 
     if (!name || !email || !password) {
@@ -55,10 +63,21 @@ export async function POST(req: Request) {
     }
 
     if (organizationId) {
-      const organization = await client.organization.findUnique({
+      let organization = await client.organization.findUnique({
         where: { id: organizationId },
         select: { id: true },
       });
+
+      if (!organization && organizationName) {
+        organization = await client.organization.findFirst({
+          where: { name: organizationName },
+          select: { id: true },
+        });
+
+        if (organization) {
+          organizationId = organization.id;
+        }
+      }
 
       if (!organization) {
         return NextResponse.json(
@@ -69,13 +88,27 @@ export async function POST(req: Request) {
     }
 
     if (departmentId) {
-      const department = await client.department.findFirst({
+      let department = await client.department.findFirst({
         where: {
           id: departmentId,
           organizationId,
         },
         select: { id: true },
       });
+
+      if (!department && departmentName) {
+        department = await client.department.findFirst({
+          where: {
+            name: departmentName,
+            organizationId,
+          },
+          select: { id: true },
+        });
+
+        if (department) {
+          departmentId = department.id;
+        }
+      }
 
       if (!department) {
         return NextResponse.json(

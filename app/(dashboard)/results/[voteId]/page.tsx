@@ -4,8 +4,9 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Crown, Trophy } from "lucide-react";
+import { Crown, Trophy, BarChart3, Clock } from "lucide-react";
 import ResultChart from "../../components/ResultChart";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface VoteResult {
   id: string;
@@ -68,16 +69,42 @@ const Result = () => {
   }
 
   if (error) {
+    const isAwaitingAnnouncement = error
+      .toLowerCase()
+      .includes("announced after the vote has ended");
+
     return (
-      <div className="min-h-screen flex items-center justify-center mt-24">
-        <div className="text-red-500 px-4 text-center">{error}</div>
+      <div className="min-h-screen flex items-center justify-center p-4 mt-24">
+        <Card className="w-full max-w-md rounded-lg shadow-sm">
+          <CardContent className="p-8 text-center">
+            {isAwaitingAnnouncement ? (
+              <Clock className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            ) : (
+              <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            )}
+            <p className="font-medium text-gray-900">
+              {isAwaitingAnnouncement ? "Result not announced yet" : "Unable to load results"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">{error}</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!results) return null;
 
-  const sortedCandidates = results.candidates.sort((a, b) => b.votes - a.votes);
+  const sortedCandidates = [...results.candidates].sort((a, b) => b.votes - a.votes);
+  const winningCandidates =
+    results.totalVotes > 0
+      ? sortedCandidates.filter((candidate) => candidate.isWinner)
+      : [];
+  const winnerLabel =
+    results.totalVotes === 0
+      ? "Awaiting votes"
+      : winningCandidates.length > 1
+      ? `Tie: ${winningCandidates.map((candidate) => candidate.name).join(", ")}`
+      : `Winner: ${winningCandidates[0]?.name || "Not declared"}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 pt-24 pb-12">
@@ -90,11 +117,23 @@ const Result = () => {
             <div className="inline-flex items-center px-6 py-3 bg-white rounded-2xl shadow-md backdrop-blur-sm bg-opacity-90">
               <Trophy className="w-5 h-5 mr-2 text-violet-600" />
               <span className="text-gray-700 font-semibold text-sm sm:text-base">
-                Winner: {results.candidates.filter((candidate) => candidate.isWinner).map((candidate) => candidate.name)}
+                {winnerLabel}
               </span>
             </div>
           </div>
         </header>
+
+        {results.totalVotes === 0 && (
+          <Card className="max-w-md mx-auto mb-8 rounded-lg shadow-sm">
+            <CardContent className="p-8 text-center">
+              <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium text-gray-900">No votes submitted</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Results will update after voters submit their choices.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Main content - side by side on larger screens */}
         <div className="">

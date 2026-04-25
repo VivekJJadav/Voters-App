@@ -365,7 +365,7 @@ export default function AddMembersDialog({
           </TabsContent>
 
           <TabsContent value="csv" className="space-y-6 mt-4">
-            <div className="border-2 border-dashed border-gray-300 p-6 rounded-lg hover:border-primary transition-colors">
+            <div className="rounded-xl border-2 border-dashed border-white/15 bg-white/[0.04] p-6 transition-colors hover:border-[#8b9cf7]/70 hover:bg-white/[0.07]">
               <input
                 type="file"
                 accept=".csv"
@@ -377,11 +377,11 @@ export default function AddMembersDialog({
                 htmlFor="csv-upload"
                 className="flex flex-col items-center cursor-pointer"
               >
-                <Upload className="h-8 w-8 text-gray-500" />
-                <span className="mt-2 text-sm text-gray-500">
+                <Upload className="h-8 w-8 text-white/55" />
+                <span className="mt-2 text-sm text-white/70">
                   Drop your CSV file here or click to browse
                 </span>
-                <span className="mt-1 text-xs text-gray-400">
+                <span className="mt-1 text-xs text-white/45">
                   Required columns: email, name
                 </span>
               </label>
@@ -405,7 +405,7 @@ export default function AddMembersDialog({
               {members.map((member) => (
                 <div
                   key={member.email}
-                  className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                  className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.06] p-2"
                 >
                   <div className="flex items-center gap-2">
                     <div

@@ -7,7 +7,7 @@ import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import useGetUserMemberships from "@/app/actions/useGetUserMemberships";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronRight, Calendar } from "lucide-react";
+import { ChevronRight, Calendar, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const Vote = () => {
@@ -33,6 +33,14 @@ const Vote = () => {
   }, [organizations, organizationsLoading, validOrganizationId, selectedOrgId, setSelectedOrgId]);
 
   const { votes, loading: votesLoading } = useGetVotes(selectedOrgId || "");
+  const endedVotes = useMemo(() => {
+    const now = new Date();
+
+    return votes.filter((vote) => {
+      const effectiveEndTime = vote.extendedTime || vote.endTime;
+      return Boolean(effectiveEndTime && new Date(effectiveEndTime) <= now);
+    });
+  }, [votes]);
 
   useEffect(() => {
     if (votesLoading) {
@@ -89,31 +97,49 @@ const Vote = () => {
       </div>
 
       <div className="max-w-3xl mx-auto w-full px-4 md:px-6 pb-8 space-y-4 pt-44">
-        {votes.map((vote) => (
-          <Card 
-            key={vote.id} 
-            className="hover:shadow-md transition-all duration-200 cursor-pointer border-gray-200"
-            onClick={() => router.push(`/results/${vote.id}`)}
-          >
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg text-gray-900 mb-2 truncate">
-                    {vote.name}
-                  </h3>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    <span>
-                      {new Date(vote.startTime).toLocaleDateString()} - 
-                      {vote.endTime ? new Date(vote.endTime).toLocaleDateString() : "Ongoing"}
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
-              </div>
+        {endedVotes.length === 0 ? (
+          <Card className="rounded-lg shadow-sm">
+            <CardContent className="p-8 text-center">
+              <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium text-gray-900">No results yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Results will be announced after each vote has ended.
+              </p>
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          endedVotes.map((vote) => {
+            const effectiveEndTime = vote.extendedTime || vote.endTime;
+
+            return (
+              <Card
+                key={vote.id}
+                className="hover:shadow-md transition-all duration-200 cursor-pointer border-gray-200"
+                onClick={() => router.push(`/results/${vote.id}`)}
+              >
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg text-gray-900 mb-2 truncate">
+                        {vote.name}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>
+                          {new Date(vote.startTime).toLocaleDateString()} -
+                          {effectiveEndTime
+                            ? new Date(effectiveEndTime).toLocaleDateString()
+                            : "Ongoing"}
+                        </span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );

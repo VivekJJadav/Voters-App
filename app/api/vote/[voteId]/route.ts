@@ -15,19 +15,6 @@ export async function GET(
       );
     }
 
-    const membership = await client.organizationMember.findFirst({
-      where: {
-        userId: userId,
-      },
-    });
-
-    if (!membership) {
-      return NextResponse.json(
-        { error: "User is not a member of this organization" },
-        { status: 403 }
-      );
-    }
-
     const vote = await client.vote.findFirst({
       where: {
         id: params.voteId,
@@ -59,7 +46,7 @@ export async function GET(
         results: {
           include: {
             user: true,
-          }
+          },
         },
         slogans: true,
       },
@@ -68,15 +55,32 @@ export async function GET(
     if (!vote) {
       return NextResponse.json({ error: "Vote not found" }, { status: 404 });
     }
-    
+
+    const membership = await client.organizationMember.findFirst({
+      where: {
+        userId,
+        organizationId: vote.organizationId,
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: "User is not a member of this organization" },
+        { status: 403 }
+      );
+    }
+
     const now = new Date();
     const startTime = new Date(vote.startTime);
     const endTime = vote.endTime ? new Date(vote.endTime) : null;
+    const effectiveEndTime = vote.extendedTime || vote.endTime;
+    const hasEnded = Boolean(effectiveEndTime && effectiveEndTime <= now);
 
-    const isActive = startTime <= now && (!endTime || endTime > now);
+    const isActive = startTime <= now && (!effectiveEndTime || effectiveEndTime > now);
 
     return NextResponse.json({
       ...vote,
+      results: hasEnded ? vote.results : [],
       isActive,
       startTime: startTime.toISOString(),
       endTime: endTime?.toISOString(),

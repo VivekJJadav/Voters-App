@@ -7,6 +7,8 @@ import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 import Votes from "../components/Votes";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import useGetUserMemberships from "@/app/actions/useGetUserMemberships";
+import { Card, CardContent } from "@/components/ui/card";
+import { VoteIcon } from "lucide-react";
 
 const Vote = () => {
   const [votesError, setVotesError] = useState<string | null>(null);
@@ -75,13 +77,25 @@ const Vote = () => {
         />
       </div>
       <div className="px-4 md:px-16 lg:px-20 mt-48 md:mt-52">
-        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${
-          votes.length > 2 ? 'justify-items-center' : ''
-        }`}>
-          {votes.map((vote) => (
-            <Votes currentVote={vote} key={vote.id} />
-          ))}
-        </div>
+        {votes.length === 0 ? (
+          <Card className="max-w-md mx-auto rounded-lg shadow-sm">
+            <CardContent className="p-8 text-center">
+              <VoteIcon className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium text-gray-900">No votes available</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                New votes for this organization will appear here.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${
+            votes.length > 2 ? 'justify-items-center' : ''
+          }`}>
+            {votes.map((vote) => (
+              <Votes currentVote={vote} key={vote.id} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

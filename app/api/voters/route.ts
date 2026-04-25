@@ -138,12 +138,18 @@ export async function PUT(request: Request) {
           },
         });
 
-        const departmentConnections = departmentIds.map(
-          (departmentId: string) => ({
-            departmentId,
-            voterId: id,
-          })
-        );
+        const validDepartments = await prisma.department.findMany({
+          where: {
+            id: { in: departmentIds },
+            organizationId,
+          },
+          select: { id: true },
+        });
+
+        const departmentConnections = validDepartments.map((department) => ({
+          departmentId: department.id,
+          userId: id,
+        }));
 
         await prisma.userDepartment.createMany({
           data: departmentConnections,
@@ -163,7 +169,7 @@ export async function PUT(request: Request) {
         candidates: true,
         slogans: true,
         votesReceived: true,
-        votesSubmitted: true
+        votesSubmitted: true,
       },
     });
 

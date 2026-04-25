@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import useAuthStore from "@/store/authStore";
 import { Department } from "@prisma/client";
@@ -51,28 +51,28 @@ const useGetDepartments = (organizationId: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const getDepartmentPath = (
-    deptId: string,
-    deps = new Set<string>()
-  ): string => {
-    if (deps.has(deptId)) return ""; 
-    deps.add(deptId);
+  const getDepartmentPath = useCallback(
+    (deptId: string, deps = new Set<string>()): string => {
+      if (deps.has(deptId)) return "";
+      deps.add(deptId);
 
-    const dept = departments.find((d) => d.id === deptId);
-    if (!dept) return "";
+      const dept = departments.find((d) => d.id === deptId);
+      if (!dept) return "";
 
-    if (!dept.parentId) return dept.name;
+      if (!dept.parentId) return dept.name;
 
-    const parentPath = getDepartmentPath(dept.parentId, deps);
-    return parentPath ? `${parentPath} - ${dept.name}` : dept.name;
-  };
+      const parentPath = getDepartmentPath(dept.parentId, deps);
+      return parentPath ? `${parentPath} - ${dept.name}` : dept.name;
+    },
+    [departments]
+  );
 
   const departmentsWithPaths = useMemo(() => {
     return departments.map((dept) => ({
       ...dept,
       fullPath: getDepartmentPath(dept.id),
     }));
-  }, [departments]);
+  }, [departments, getDepartmentPath]);
 
   const sortedDepartments = useMemo(() => {
     return [...departmentsWithPaths].sort((a, b) =>

@@ -1,4 +1,5 @@
 import client from "@/app/libs/prismadb";
+import { sendCandidacyInvitationsForVote } from "@/app/libs/candidacyInvitations";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -15,9 +16,79 @@ export async function POST(request: Request) {
       departmentId,
     } = await request.json();
 
-    if (!name || !description || !organizationId || !candidates) {
+    if (!name || !description || !organizationId) {
       return NextResponse.json(
         { error: "Required fields are missing" },
+        { status: 400 }
+      );
+    }
+
+    const submittedCandidates = Array.isArray(candidates) ? candidates : [];
+
+    const candidateUserIds = submittedCandidates
+      .map((candidate: { userId?: string }) => candidate.userId)
+      .filter(
+        (userId: string | undefined): userId is string =>
+          typeof userId === "string" && userId.length > 0
+      );
+    const uniqueCandidateUserIds = [...new Set(candidateUserIds)];
+
+    if (candidateUserIds.length !== submittedCandidates.length) {
+      return NextResponse.json(
+        { error: "Every candidate must include a user ID" },
+        { status: 400 }
+      );
+    }
+
+    if (uniqueCandidateUserIds.length !== candidateUserIds.length) {
+      return NextResponse.json(
+        { error: "A candidate can only be added once to a vote" },
+        { status: 400 }
+      );
+    }
+
+    const [organization, department, candidateMembershipCount] =
+      await Promise.all([
+        client.organization.findUnique({
+          where: { id: organizationId },
+          select: { id: true },
+        }),
+        departmentId
+          ? client.department.findFirst({
+              where: { id: departmentId, organizationId },
+              select: { id: true },
+            })
+          : null,
+        uniqueCandidateUserIds.length > 0
+          ? client.organizationMember.count({
+              where: {
+                organizationId,
+                userId: { in: uniqueCandidateUserIds },
+              },
+            })
+          : Promise.resolve(0),
+      ]);
+
+    if (!organization) {
+      return NextResponse.json(
+        { error: "Organization not found" },
+        { status: 404 }
+      );
+    }
+
+    if (departmentId && !department) {
+      return NextResponse.json(
+        { error: "Department does not belong to this organization" },
+        { status: 400 }
+      );
+    }
+
+    if (
+      uniqueCandidateUserIds.length > 0 &&
+      candidateMembershipCount !== uniqueCandidateUserIds.length
+    ) {
+      return NextResponse.json(
+        { error: "All candidates must belong to the selected organization" },
         { status: 400 }
       );
     }
@@ -41,8 +112,8 @@ export async function POST(request: Request) {
         organizationId,
         departmentId,
         candidates: {
-          create: candidates.map((candidate: { userId: string }) => ({
-            userId: candidate.userId,
+          create: uniqueCandidateUserIds.map((userId) => ({
+            userId,
           })),
         },
       },
@@ -59,7 +130,34 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(newVote, { status: 201 });
+    let candidateInvitationSummary = null;
+
+    try {
+      candidateInvitationSummary = await sendCandidacyInvitationsForVote({
+        voteId: newVote.id,
+        appUrl: new URL(request.url).origin,
+      });
+    } catch (error) {
+      console.error("Failed to send candidacy invitations:", error);
+      candidateInvitationSummary = {
+        total: 0,
+        sent: 0,
+        failed: 0,
+        results: [],
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to send candidacy invitations",
+      };
+    }
+
+    return NextResponse.json(
+      {
+        ...newVote,
+        candidateInvitationSummary,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.error("Detailed error:", error, error instanceof Error ? error.stack : "");
@@ -147,11 +245,22 @@ export async function GET(request: Request) {
       },
     });
 
-    const filteredVotes = votes.map(vote => ({
-      ...vote,
-      results: vote.results.filter(result => result.userId != null && result.candidateId != null),
-      isActive: vote.startTime <= new Date() && (!vote.endTime || vote.endTime > new Date())
-    }));
+    const now = new Date();
+    const filteredVotes = votes.map((vote) => {
+      const effectiveEndTime = vote.extendedTime || vote.endTime;
+      const hasEnded = Boolean(effectiveEndTime && effectiveEndTime <= now);
+
+      return {
+        ...vote,
+        results: hasEnded
+          ? vote.results.filter(
+              (result) => result.userId != null && result.candidateId != null
+            )
+          : [],
+        isActive:
+          vote.startTime <= now && (!effectiveEndTime || effectiveEndTime > now),
+      };
+    });
 
     return NextResponse.json(filteredVotes);
   } catch (error) {
@@ -191,6 +300,18 @@ export async function PUT(request: Request) {
       return NextResponse.json(
         { error: "Vote ID is required" },
         { status: 400 }
+      );
+    }
+
+    const existingVote = await client.vote.findFirst({
+      where: { id, organizationId },
+      select: { id: true },
+    });
+
+    if (!existingVote) {
+      return NextResponse.json(
+        { error: "Vote not found in this organization" },
+        { status: 404 }
       );
     }
 
@@ -279,7 +400,21 @@ export async function PUT(request: Request) {
       },
     });
 
-    return NextResponse.json(finalVote);
+    if (!finalVote) {
+      return NextResponse.json({ error: "Vote not found" }, { status: 404 });
+    }
+
+    const now = new Date();
+    const effectiveEndTime = finalVote.extendedTime || finalVote.endTime;
+    const hasEnded = Boolean(effectiveEndTime && effectiveEndTime <= now);
+
+    return NextResponse.json({
+      ...finalVote,
+      results: hasEnded ? finalVote.results : [],
+      isActive:
+        finalVote.startTime <= now &&
+        (!effectiveEndTime || effectiveEndTime > now),
+    });
   } catch (error) {
     console.error("Error updating vote:", error);
     return NextResponse.json(
@@ -307,6 +442,18 @@ export async function DELETE(request: Request) {
       return NextResponse.json(
         { error: "Vote ID is required" },
         { status: 400 }
+      );
+    }
+
+    const existingVote = await client.vote.findFirst({
+      where: { id, organizationId },
+      select: { id: true },
+    });
+
+    if (!existingVote) {
+      return NextResponse.json(
+        { error: "Vote not found in this organization" },
+        { status: 404 }
       );
     }
 

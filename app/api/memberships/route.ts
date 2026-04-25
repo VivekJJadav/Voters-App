@@ -16,10 +16,12 @@ export async function GET(request: Request) {
   try {
     const organizations = await client.organization.findMany({
       where: {
-        AND: [
-          { members: { some: { user: { email } } } },
-          { NOT: { creatorId: userId } }
-        ],
+        members: {
+          some: {
+            userId,
+            user: { email },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });

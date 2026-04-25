@@ -87,25 +87,30 @@ const DepartmentList = ({
         <div key={department.id} className="group">
           <div
             style={{ marginLeft: `${level * 1.5}rem` }}
-            className="relative p-4 border border-gray-200 rounded-lg bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-gray-300"
+            className="relative rounded-lg border border-white/12 bg-white/[0.08] p-4 shadow-[0_10px_30px_rgba(15,12,41,0.18)] transition-all duration-200 hover:border-white/22 hover:bg-white/[0.11]"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 {hasChildDepartments(department.id) ? (
                   <button
                     onClick={() => handleExpand(department.id)}
-                    className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-white/65 transition-colors duration-200 hover:bg-white/10 hover:text-white"
+                    aria-label={
+                      expanded[department.id]
+                        ? "Collapse department"
+                        : "Expand department"
+                    }
                   >
                     {expanded[department.id] ? (
-                      <ChevronDown className="w-4 h-4 text-gray-600" />
+                      <ChevronDown className="h-4 w-4" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                      <ChevronRight className="h-4 w-4" />
                     )}
                   </button>
                 ) : (
-                  <div className="w-6 h-6" />
+                  <div className="h-7 w-7" />
                 )}
-                <h3 className="font-semibold text-gray-800">
+                <h3 className="font-semibold text-white/92">
                   {department.name}
                 </h3>
               </div>
@@ -117,16 +122,18 @@ const DepartmentList = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-white hover:bg-gray-50 border-gray-200 text-gray-700 hover:text-gray-900 transition-colors duration-200"
+                  className="border-white/[0.14] bg-white/[0.07] text-white/70 shadow-none transition-colors duration-200 hover:border-white/25 hover:bg-white/12 hover:text-white"
                   onClick={() => handleDepartment(department.id)}
+                  aria-label={`Create child department under ${department.name}`}
                 >
                   <PlusIcon className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-white hover:bg-red-50 border-gray-200 text-red-600 hover:text-red-700 hover:border-red-200 transition-colors duration-200"
+                  className="border-red-300/20 bg-red-500/[0.08] text-red-200 shadow-none transition-colors duration-200 hover:border-red-300/30 hover:bg-red-500/[0.14] hover:text-red-100"
                   onClick={() => handleDeleteDepartment(department.id)}
+                  aria-label={`Delete ${department.name}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

@@ -35,14 +35,14 @@ const Organization = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="fixed top-0 bg-white z-10 py-1 px-4">
-        <div className="mt-28 flex">
+    <div className="flex h-screen flex-col overflow-hidden px-4 pb-5 pt-24 md:px-6">
+      <div className="z-10 shrink-0">
+        <div className="flex flex-col gap-3 pb-4 md:flex-row md:items-center md:justify-between">
           <NewOrganizationDialog
             label="Organization"
             onSuccess={(Org) => handleNewOrganization(Org)}
           />
-          <div className="lg:w-60 w-full z-50 px-4 lg:hidden md:hidden">
+          <div className="z-50 w-full md:hidden">
             <SelectorForm
               values={organizations}
               placeholder="Select an organization"
@@ -51,19 +51,19 @@ const Organization = () => {
           </div>
         </div>
       </div>
-      <div className="flex mt-28 fixed w-full">
-        <div className="hidden h-[calc(100vh-190px)] md:block w-1/5 px-4 overflow-y-auto mt-16">
+      <div className="flex min-h-0 w-full flex-1 gap-5">
+        <aside className="hidden w-[280px] shrink-0 overflow-y-auto pb-1 pr-1 md:block lg:w-[320px]">
           {loading ? (
-            <p>Loading...</p>
+            <p className="text-sm text-white/60">Loading...</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {organizations.map((org) => (
                 <OrganizationTag org={org} key={org.id} />
               ))}
             </ul>
           )}
-        </div>
-        <div className="w-full md:w-4/5 bg-gray-100 p-4 rounded-lg mr-3">
+        </aside>
+        <section className="min-h-0 w-full flex-1 overflow-hidden rounded-lg border border-white/12 bg-white/[0.07] shadow-[0_18px_50px_rgba(15,12,41,0.24)] backdrop-blur-2xl">
           {selectedOrgId ? (
             <OrganizationPage orgId={selectedOrgId} />
           ) : (
@@ -71,7 +71,7 @@ const Organization = () => {
               Please select an organization
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

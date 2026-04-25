@@ -14,9 +14,9 @@ const NavButton = ({ href, label }: Props) => {
       <Link href={href}>
         <span
           className={cn(
-            "inline-block font-sans cursor-pointer text-white hover:text-black text-base font-medium rounded-lg px-5 py-2.5 transform transition duration-300 ease-in-out hover:scale-105 hover:bg-slate-300",
+            "inline-block font-sans cursor-pointer text-white/75 hover:text-white text-base font-medium rounded-xl px-5 py-2.5 transform transition duration-300 ease-in-out hover:scale-105 hover:bg-white/10",
             pathname === href &&
-              "bg-gradient-to-r from-slate-300 to-slate-400 text-black hover:bg-gradient-to-r hover:from-slate-400 hover:to-slate-500"
+              "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow-[0_8px_24px_rgba(102,126,234,0.28)] hover:from-[#764ba2] hover:to-[#667eea]"
           )}
         >
           {label}

@@ -5,7 +5,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import axios from "axios";
-import { AlertCircle, Check, ChevronRight } from "lucide-react";
+import { AlertCircle, Check, ChevronRight, Target, Users } from "lucide-react";
 import useAuthStore from "@/store/authStore";
 
 const VotePage = () => {
@@ -67,7 +67,7 @@ const VotePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 px-4 sm:px-6 pt-16 pb-24 relative">
+    <div className="relative min-h-screen px-4 pb-28 pt-28 sm:px-6 md:pt-32">
       {/* Confetti Animation */}
       {showConfetti && (
         <div className="fixed inset-0 flex justify-center items-center pointer-events-none z-50">
@@ -93,18 +93,19 @@ const VotePage = () => {
       </div>
 
       {/* Header */}
-      <header className="mx-auto max-w-3xl bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg border border-gray-100">
+      <header className="mx-auto max-w-3xl rounded-2xl border border-white/12 bg-white/[0.08] shadow-[0_18px_60px_rgba(15,12,41,0.32)] backdrop-blur-2xl">
         <div className="text-center px-6 py-8 space-y-4">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white">
             {vote?.name}
           </h1>
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-5 py-1.5 rounded-full text-sm font-medium">
-              🎯 {vote?.candidates?.length || 0} Participants
+            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#667eea] to-[#764ba2] px-5 py-1.5 text-sm font-medium text-white shadow-[0_8px_24px_rgba(102,126,234,0.28)]">
+              <Target className="h-4 w-4" />
+              {vote?.candidates?.length || 0} Participants
             </div>
-            <div className="flex items-center bg-emerald-100 px-3 py-1.5 rounded-full">
+            <div className="flex items-center rounded-full border border-emerald-300/20 bg-emerald-400/12 px-3 py-1.5">
               <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse mr-2" />
-              <span className="text-xs text-emerald-800 font-medium">
+              <span className="text-xs font-medium text-emerald-100">
                 Live Voting
               </span>
             </div>
@@ -120,35 +121,47 @@ const VotePage = () => {
         <>
           {/* Candidates Grid */}
           <div className="max-w-7xl mx-auto mt-8 sm:mt-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {vote?.candidates.map((candidate) => {
-                const slogan = vote.slogans?.find(
-                  (s) => s.userId === candidate.user.id
-                );
-                const isSelected = selectedCandidate === candidate.id;
-                const hasVoted = votedCandidate === candidate.id;
+            {vote?.candidates.length === 0 ? (
+              <div className="mx-auto max-w-md rounded-xl border border-white/12 bg-white/[0.08] p-8 text-center shadow-[0_18px_60px_rgba(15,12,41,0.32)] backdrop-blur-2xl">
+                <Users className="h-10 w-10 mx-auto text-[#8b9cf7] mb-3" />
+                <p className="font-semibold text-white">
+                  No candidates yet
+                </p>
+                <p className="mt-1 text-sm text-white/60">
+                  Candidates will appear here after they accept the email
+                  invitation.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {vote?.candidates.map((candidate) => {
+                  const slogan = vote.slogans?.find(
+                    (s) => s.userId === candidate.user.id
+                  );
+                  const isSelected = selectedCandidate === candidate.id;
+                  const hasVoted = votedCandidate === candidate.id;
 
-                return (
-                  <div
-                    key={candidate.id}
-                    onClick={() => handleCandidateSelect(candidate.id)}
-                    className={`
-                      group relative bg-white rounded-xl shadow-md transition-all duration-300 
+                  return (
+                    <div
+                      key={candidate.id}
+                      onClick={() => handleCandidateSelect(candidate.id)}
+                      className={`
+                      group relative overflow-hidden rounded-xl border border-white/12 bg-white/[0.08] shadow-[0_14px_42px_rgba(15,12,41,0.26)] backdrop-blur-2xl transition-all duration-300
                       ${
                         isSelected
-                          ? "ring-2 ring-purple-500 shadow-purple-100"
-                          : "hover:shadow-xl hover:scale-[1.02]"
+                          ? "border-[#8b9cf7]/70 ring-2 ring-[#8b9cf7]/60"
+                          : "hover:border-white/22 hover:bg-white/[0.11] hover:shadow-[0_18px_56px_rgba(15,12,41,0.34)]"
                       }
                       ${!votedCandidate && "cursor-pointer"}
                     `}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-[#8b9cf7]/10 opacity-0 transition-opacity group-hover:opacity-100" />
 
-                    <div className="p-4 sm:p-6 relative">
-                      <div className="flex items-start space-x-4">
-                        <div className="flex-shrink-0">
-                          <div
-                            className={`
+                      <div className="p-4 sm:p-6 relative">
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0">
+                            <div
+                              className={`
                               h-12 w-12 sm:h-14 sm:w-14 rounded-full flex items-center justify-center 
                               text-xl sm:text-2xl font-bold text-white shadow-md
                               ${
@@ -157,73 +170,69 @@ const VotePage = () => {
                                   : "bg-gradient-to-br from-purple-500 to-indigo-600"
                               }
                             `}
-                          >
-                            {candidate.user.name[0]}
+                            >
+                              {candidate.user.name[0]}
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
-                            {candidate.user.name}
-                          </h3>
-                          {candidate.user.isCandidate && (
-                            <p className="text-sm text-purple-600 font-medium mt-1">
-                              {candidate.user.isCandidate}
-                            </p>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="truncate text-lg font-bold text-white sm:text-xl">
+                              {candidate.user.name}
+                            </h3>
+                          </div>
+
+                          {isSelected && (
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#8b9cf7]">
+                              <Check className="h-4 w-4 text-white" />
+                            </div>
                           )}
                         </div>
 
-                        {isSelected && (
-                          <div className="h-6 w-6 bg-purple-500 rounded-full flex items-center justify-center">
-                            <Check className="h-4 w-4 text-white" />
+                        {slogan ? (
+                          <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.06] p-4">
+                            <div className="flex items-start space-x-2 text-white">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="mt-0.5 h-5 w-5 shrink-0 text-[#a855f7]"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM7 8a1 1 0 012 0 1 1 0 11-2 0zm4 0a1 1 0 012 0 1 1 0 11-2 0zm2 3a1 1 0 100-2 1 1 0 000 2z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              <p className="text-sm font-medium italic text-white/90 sm:text-base">
+                                {slogan.content}
+                              </p>
+                            </div>
                           </div>
+                        ) : (
+                          <p className="mt-4 text-sm italic text-white/55">
+                            No slogan provided
+                          </p>
                         )}
                       </div>
 
-                      {slogan ? (
-                        <div className="mt-4 bg-purple-50/50 rounded-lg p-4 border border-purple-100">
-                          <div className="flex items-start space-x-2 text-purple-900">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5 shrink-0 mt-0.5 text-purple-500"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM7 8a1 1 0 012 0 1 1 0 11-2 0zm4 0a1 1 0 012 0 1 1 0 11-2 0zm2 3a1 1 0 100-2 1 1 0 000 2z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                            <p className="italic font-medium text-sm sm:text-base">
-                              {slogan.content}
-                            </p>
+                      {hasVoted && (
+                        <div className="px-4 sm:px-6 pb-4 relative">
+                          <div className="flex w-full items-center justify-center space-x-2 rounded-xl bg-emerald-500 py-3 font-bold text-white">
+                            <Check className="h-5 w-5" />
+                            <span>Voted</span>
                           </div>
                         </div>
-                      ) : (
-                        <p className="mt-4 text-sm text-gray-500 italic">
-                          No slogan provided
-                        </p>
                       )}
                     </div>
-
-                    {hasVoted && (
-                      <div className="px-4 sm:px-6 pb-4 relative">
-                        <div className="w-full py-3 rounded-xl font-bold bg-emerald-500 text-white flex items-center justify-center space-x-2">
-                          <Check className="h-5 w-5" />
-                          <span>Voted</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Submit Button - Only show when a candidate is selected and not yet voted */}
           {selectedCandidate && !votedCandidate && (
-            <div className="fixed bottom-8 left-0 right-0 px-4 z-50">
+            <div className="fixed bottom-8 left-0 right-0 z-50 px-4">
               <div className="max-w-md mx-auto">
                 <button
                   onClick={handleSubmitVote}

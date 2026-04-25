@@ -11,9 +11,11 @@ const useGetUserMemberships = () => {
     const fetchOrgs = async () => {
       try {
         if (user?.email) {
-          const res = await fetch(
-            `/api/memberships?email=${user.email}&userId=${user.id}`
-          );
+          const params = new URLSearchParams({
+            email: user.email,
+            userId: user.id,
+          });
+          const res = await fetch(`/api/memberships?${params.toString()}`);
           const data = await res.json();
           setOrganizations(data);
         }
@@ -27,7 +29,7 @@ const useGetUserMemberships = () => {
     if (user) {
       fetchOrgs();
     } else {
-        setOrganizationsLoading(false);
+      setOrganizationsLoading(false);
     }
   }, [user]);
 

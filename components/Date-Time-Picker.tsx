@@ -72,7 +72,7 @@ const DateTimePicker = ({ value, onChange }: DateTimePickerProps) => {
           <Popover.Content
             side="bottom"
             align="start"
-            className="w-auto p-0 bg-white shadow-md rounded-lg"
+            className="z-50 w-auto rounded-xl border border-white/12 bg-[#17142f]/95 p-0 text-white shadow-[0_18px_50px_rgba(15,12,41,0.42)] backdrop-blur-xl"
           >
             <Calendar
               mode="single"

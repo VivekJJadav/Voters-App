@@ -7,10 +7,10 @@ type Props = {
 
 export default function RootLayout({ children }: Props) {
   return (
-    <>
+    <div className="dashboard-app">
       <Navbar />
-      <div>{children}</div>
+      <main className="relative z-10 min-h-screen">{children}</main>
       <Toaster />
-    </>
+    </div>
   );
 }
