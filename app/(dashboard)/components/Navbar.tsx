@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Menu, Settings } from "lucide-react";
+import { Building2, LogOut, Menu, Settings } from "lucide-react";
 import { useScrollTop } from "@/hooks/use-scroll-top";
 import { cn } from "@/lib/utils";
 import { useMedia } from "react-use";
@@ -29,14 +29,6 @@ import { User } from "@prisma/client";
 import Image from "next/image";
 
 const routes = [
-  {
-    label: "Home",
-    href: "/home",
-  },
-  {
-    label: "Organizations",
-    href: "/organizations",
-  },
   {
     label: "Vote",
     href: "/vote",
@@ -128,8 +120,9 @@ const Navbar = () => {
                 alt="Logo"
                 width={100}
                 height={100}
-                className="object-contain"
+                className="object-contain cursor-pointer"
                 priority
+                onClick={() => router.push("/vote")}
               />
             </div>
           </>
@@ -142,7 +135,7 @@ const Navbar = () => {
               height={100}
               className="object-contain cursor-pointer"
               priority
-              onClick={() => router.push('/home')}
+              onClick={() => router.push("/vote")}
             />
             <ul className="flex items-center space-x-6">
               {routes.map((item) => (
@@ -195,6 +188,13 @@ const Navbar = () => {
                 >
                   <Settings className="h-4 w-4" />
                   Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push("/organizations")}
+                  className="cursor-pointer gap-2 rounded-md px-3 py-2 text-white/80 focus:bg-white/10 focus:text-white"
+                >
+                  <Building2 className="h-4 w-4" />
+                  Organizer tools
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleLogout}

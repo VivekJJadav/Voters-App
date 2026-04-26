@@ -60,7 +60,7 @@ export const SignInCard = () => {
       ); // Check store state
 
       if (response.status === 200 || response.status === 302) {
-        window.location.href = "/home";
+        window.location.href = "/vote";
       }
     } catch (error) {
       // Robust error handling for all cases

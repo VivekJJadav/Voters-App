@@ -68,7 +68,7 @@ const CandidateSelection = ({
   );
 
   const getPlaceholderText = () => {
-    if (voters.length === 0) return "Please select organization";
+    if (voters.length === 0) return "Please select a voting space";
     if (departmentId && filteredVoters.length === 0)
       return "Please add members to department";
     if (departmentId) return "Select candidates from department...";

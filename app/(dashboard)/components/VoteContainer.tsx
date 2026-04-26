@@ -1,96 +1,107 @@
 "use client";
 
 import useGetVote from "@/app/actions/useGetVote";
-import { Vote } from "@prisma/client";
+import { Vote as VoteIcon } from "lucide-react";
+import { Vote as VoteModel } from "@prisma/client";
 
 interface VoteContainerProps {
-  currentVote: Vote;
+  currentVote: VoteModel;
   onClick: () => void;
 }
 
 const VoteContainer = ({ currentVote, onClick }: VoteContainerProps) => {
   const { vote } = useGetVote(currentVote.id);
+  const displayVote = vote || currentVote;
 
   const getStatusInfo = () => {
-    if (!vote) return { isActive: false, display: null };
+    if (!displayVote) return { isActive: false, display: null };
 
     const now = new Date();
-    const startTime = new Date(vote.startTime);
-    const endTime = vote.endTime ? new Date(vote.endTime) : null;
-    const isActive = startTime <= now && (!endTime || endTime > now);
+    const startTime = new Date(displayVote.startTime);
+    const effectiveEndTime = displayVote.extendedTime || displayVote.endTime;
+    const endTime = effectiveEndTime ? new Date(effectiveEndTime) : null;
+    const isUpcoming = startTime > now;
+    const isActive = !isUpcoming && (!endTime || endTime > now);
 
     return {
       isActive,
       display: isActive ? (
-        <>
-          <div className="h-2.5 w-2.5 bg-green-500 rounded-full animate-pulse mr-2"></div>
-          <span className="text-xs text-emerald-600 font-medium">Live</span>
-        </>
+        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-sm font-semibold text-emerald-200">
+          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
+          Live
+        </span>
+      ) : isUpcoming ? (
+        <span className="inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-400/10 px-3 py-1 text-sm font-semibold text-sky-100">
+          <span className="h-2.5 w-2.5 rounded-full bg-sky-300" />
+          Upcoming
+        </span>
       ) : (
-        <>
-          <div className="h-2.5 w-2.5 bg-gray-400 rounded-full mr-2"></div>
-          <span className="text-xs text-gray-600 font-medium">Ended</span>
-        </>
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1 text-sm font-semibold text-white/60">
+          <span className="h-2.5 w-2.5 rounded-full bg-white/40" />
+          Ended
+        </span>
       )
     };
   };
 
   const statusInfo = getStatusInfo();
   const isActive = statusInfo.isActive;
+  const description = displayVote.description?.trim();
 
   return (
     <div
       onClick={isActive ? onClick : undefined}
-      className={`group relative w-full h-auto min-h-[11rem] rounded-xl shadow-lg transition-all duration-300 ease-out 
-        border border-gray-100 bg-gradient-to-br ${
-          isActive
-            ? "from-emerald-50 to-indigo-50 hover:shadow-2xl cursor-pointer"
-            : "from-gray-50 to-gray-100 grayscale opacity-75 cursor-not-allowed"
+      className={`group relative min-h-[11rem] w-full overflow-hidden rounded-lg border p-5 shadow-[0_18px_50px_rgba(15,12,41,0.24)] transition-all duration-300 ease-out ${
+        isActive
+          ? "cursor-pointer border-white/12 bg-white/[0.075] hover:border-white/24 hover:bg-white/[0.105] hover:shadow-[0_22px_60px_rgba(15,12,41,0.32)]"
+          : "cursor-not-allowed border-white/[0.08] bg-white/[0.045] opacity-70"
         }`}
     >
-      <div className="absolute top-4 right-4 flex items-center">
+      <div className="absolute right-5 top-5 flex items-center">
         {statusInfo.display}
       </div>
 
-      <div className="p-5 space-y-4 pb-16">
-        <div className="relative">
+      <div className="flex min-h-[8.5rem] flex-col justify-between gap-5 pr-0 sm:pr-28">
+        <div className="space-y-4">
           <h3
-            className={`text-lg font-bold ${
-              isActive ? "text-black" : "text-gray-500"
-            } break-words`}
+            className={`break-words pr-28 text-xl font-bold ${
+              isActive ? "text-white" : "text-white/50"
+            }`}
           >
-            {currentVote.name}
+            {displayVote.name}
           </h3>
+
+          {description && (
+            <p
+              className={`break-words rounded-lg border px-4 py-3 text-sm leading-6 ${
+                isActive
+                  ? "border-white/10 bg-white/[0.06] text-white/70"
+                  : "border-white/[0.08] bg-white/[0.035] text-white/40"
+              }`}
+            >
+              {description}
+            </p>
+          )}
         </div>
 
-        <p
-          className={`text-sm rounded-lg py-2 px-3 shadow-sm break-words ${
-            isActive
-              ? "text-gray-600 bg-white/80"
-              : "text-gray-400 bg-gray-100/80"
-          }`}
-        >
-          {currentVote.description}
-        </p>
-
-        <div className="absolute bottom-4 right-4 flex items-center gap-2">
+        <div className="flex justify-end">
           <button
-            className={`w-10 h-10 rounded-full shadow-md transition-all duration-300 transform flex items-center justify-center ${
+            className={`flex h-12 w-12 items-center justify-center rounded-full shadow-[0_12px_30px_rgba(15,12,41,0.26)] transition-all duration-300 ${
               isActive
-                ? "bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-110 group-hover:ring-4 ring-indigo-100"
-                : "bg-gray-300 text-gray-400 cursor-not-allowed"
+                ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white hover:scale-105"
+                : "cursor-not-allowed bg-white/[0.08] text-white/40"
             }`}
             disabled={!isActive}
+            aria-label={isActive ? `Open ${displayVote.name}` : `${displayVote.name} is not open`}
           >
-            🗳️
+            <VoteIcon className="h-5 w-5" />
           </button>
         </div>
       </div>
 
       {isActive && (
         <div
-          className="absolute inset-0 rounded-xl bg-gradient-to-br from-emerald-500/0 to-indigo-500/0 
-          opacity-0 group-hover:opacity-10 transition-opacity duration-300"
+          className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-br from-white/0 via-white/0 to-[#8b9cf7]/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         />
       )}
     </div>

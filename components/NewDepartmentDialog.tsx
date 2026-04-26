@@ -142,7 +142,7 @@ const NewDepartmentDialog = ({
         <DialogHeader>
           <DialogTitle>Create new Department</DialogTitle>
           <DialogDescription>
-            Add a department to your organization and define its hierarchy.
+            Add a department to this voting space and define its hierarchy.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

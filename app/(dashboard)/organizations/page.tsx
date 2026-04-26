@@ -7,6 +7,8 @@ import SelectorForm from "@/components/SelectorForm";
 import OrganizationTag from "../components/OrganizationTag";
 import { useSelectedOrganization } from "@/context/SelectedOrganizationContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { Card, CardContent } from "@/components/ui/card";
+import { Building2 } from "lucide-react";
 
 const Organization = () => {
   const { organizations, loading, error, handleNewOrganization } =
@@ -22,14 +24,27 @@ const Organization = () => {
     );
   }
 
-  // For empty state with no organizations
   if (organizations.length === 0) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <NewOrganizationDialog
-          label="Create a new organization"
-          onSuccess={(Org) => handleNewOrganization(Org)}
-        />
+      <div className="flex min-h-screen w-full items-center justify-center px-4 pt-24">
+        <Card className="w-full max-w-md rounded-lg shadow-sm">
+          <CardContent className="space-y-6 p-8 text-center">
+            <div>
+              <Building2 className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+              <h1 className="text-xl font-semibold text-gray-900">
+                Organizer tools
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Most people join through an invitation link. Create a voting
+                space only when you need to run votes for a group.
+              </p>
+            </div>
+            <NewOrganizationDialog
+              label="Create voting space"
+              onSuccess={(Org) => handleNewOrganization(Org)}
+            />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -39,13 +54,13 @@ const Organization = () => {
       <div className="z-10 shrink-0">
         <div className="flex flex-col gap-3 pb-4 md:flex-row md:items-center md:justify-between">
           <NewOrganizationDialog
-            label="Organization"
+            label="New voting space"
             onSuccess={(Org) => handleNewOrganization(Org)}
           />
           <div className="z-50 w-full md:hidden">
             <SelectorForm
               values={organizations}
-              placeholder="Select an organization"
+              placeholder="Select a voting space"
               loading={loading}
             />
           </div>
@@ -68,7 +83,7 @@ const Organization = () => {
             <OrganizationPage orgId={selectedOrgId} />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500">
-              Please select an organization
+              Please select a voting space
             </div>
           )}
         </section>

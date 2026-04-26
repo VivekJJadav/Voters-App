@@ -57,7 +57,7 @@ const NewOrganizationDialog = ({ label, onSuccess }: NewVotingDialogProps) => {
 
   const onSubmit = async (values: FormValues) => {
     if (!values.creatorId) {
-      toast.error("Please log in to create an organization");
+      toast.error("Please log in to create a voting space");
       return;
     }
 
@@ -70,7 +70,7 @@ const NewOrganizationDialog = ({ label, onSuccess }: NewVotingDialogProps) => {
 
       const newOrganization = response.data;
 
-      toast.success("Organization created successfully!");
+      toast.success("Voting space created successfully!");
       setIsOpen(false);
       form.reset({
         name: "",
@@ -83,7 +83,7 @@ const NewOrganizationDialog = ({ label, onSuccess }: NewVotingDialogProps) => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(
-          error.response?.data?.error || "Failed to create organization"
+          error.response?.data?.error || "Failed to create voting space"
         );
       } else {
         toast.error("An unexpected error occurred");
@@ -103,9 +103,9 @@ const NewOrganizationDialog = ({ label, onSuccess }: NewVotingDialogProps) => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create new Organization</DialogTitle>
+          <DialogTitle>Create voting space</DialogTitle>
           <DialogDescription>
-            Start your own Organization and conduct voting.
+            Set this up only if you will organize votes for a group.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -120,14 +120,14 @@ const NewOrganizationDialog = ({ label, onSuccess }: NewVotingDialogProps) => {
                 <FormItem>
                   <div className="flex items-center gap-4">
                     <Label htmlFor="name" className="text-sm font-medium w-1/3">
-                      Organization Name
+                      Space Name
                     </Label>
                     <FormControl>
                       <Input
                         {...field}
                         id="name"
                         type="text"
-                        placeholder="Enter organization name"
+                        placeholder="Enter space name"
                         required
                         className="w-full"
                       />
@@ -150,7 +150,7 @@ const NewOrganizationDialog = ({ label, onSuccess }: NewVotingDialogProps) => {
             />
             <DialogFooter className="flex justify-end">
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create"}
+                {isLoading ? "Creating..." : "Create space"}
               </Button>
             </DialogFooter>
           </form>

@@ -109,7 +109,7 @@ const Settings = () => {
               Settings
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Account, organization, and voting preferences
+              Account, voting space, and notification preferences
             </p>
           </div>
           <Badge variant="outline" className="w-fit bg-white">
@@ -121,7 +121,7 @@ const Settings = () => {
         <Tabs defaultValue="account" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3 md:w-fit">
             <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="organization">Organization</TabsTrigger>
+            <TabsTrigger value="organization">Spaces</TabsTrigger>
             <TabsTrigger value="voting">Voting</TabsTrigger>
           </TabsList>
 
@@ -248,8 +248,8 @@ const Settings = () => {
                     <Building2 className="h-5 w-5 text-slate-700" />
                   </div>
                   <div>
-                    <CardTitle>Organization</CardTitle>
-                    <CardDescription>Current dashboard context</CardDescription>
+                    <CardTitle>Voting Spaces</CardTitle>
+                    <CardDescription>Where your votes come from</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -257,10 +257,10 @@ const Settings = () => {
                 {organizations.length > 0 ? (
                   <div className="grid gap-4 md:grid-cols-[260px_1fr] md:items-end">
                     <div className="space-y-2">
-                      <Label>Selected organization</Label>
+                      <Label>Selected voting space</Label>
                       <SelectorForm
                         values={organizations}
-                        placeholder="Select an organization"
+                        placeholder="Select a voting space"
                         loading={organizationsLoading}
                         value={selectedOrgId}
                         onChange={setSelectedOrgId}
@@ -268,20 +268,36 @@ const Settings = () => {
                     </div>
                     <div className="rounded-lg border bg-white p-4">
                       <p className="text-sm text-muted-foreground">
-                        Active organization
+                        Active voting space
                       </p>
                       <p className="font-semibold text-gray-900 mt-1">
-                        {selectedOrganization?.name || "No organization selected"}
+                        {selectedOrganization?.name || "No voting space selected"}
                       </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => router.push("/organizations")}
+                      >
+                        Organizer tools
+                      </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="rounded-lg border bg-white p-6 text-center">
                     <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-                    <p className="font-medium">No organizations found</p>
+                    <p className="font-medium">No voting spaces yet</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Create or join an organization to unlock this section.
+                      Votes appear after you join through an invitation link.
                     </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4"
+                      onClick={() => router.push("/organizations")}
+                    >
+                      Organizer tools
+                    </Button>
                   </div>
                 )}
 
@@ -292,7 +308,7 @@ const Settings = () => {
                       {organizations.length}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Organizations
+                      Voting Spaces
                     </p>
                   </div>
                   <div className="rounded-lg border bg-white p-4">
@@ -322,8 +338,8 @@ const Settings = () => {
                     <Vote className="h-5 w-5 text-violet-600" />
                   </div>
                   <div>
-                    <CardTitle>Voting Defaults</CardTitle>
-                    <CardDescription>Preferred vote setup values</CardDescription>
+                    <CardTitle>Organizer Defaults</CardTitle>
+                    <CardDescription>Preferred values when creating votes</CardDescription>
                   </div>
                 </div>
               </CardHeader>

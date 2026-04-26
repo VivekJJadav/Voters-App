@@ -10,13 +10,10 @@ import DepartmentBlock from "./DepartmentBlock";
 import MemberBlock from "./MemberBlock";
 import NewDepartmentDialog from "@/components/NewDepartmentDialog";
 import { Card, CardContent } from "@/components/ui/card";
-import { PlusCircle, ChevronRight, Delete, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import axios from "axios";
-import { toast } from "sonner";
 
 interface OrganizationPageProps {
   orgId: string;
@@ -41,7 +38,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
   if (!currentOrg) {
     return (
       <div className="flex h-full min-h-[320px] items-center justify-center">
-        Select an organization to begin
+        Select a voting space to begin
       </div>
     );
   }
@@ -52,7 +49,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
         return (
           <div className="p-4 md:p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Active Votes</h2>
+              <h2 className="text-lg font-semibold">Created Votes</h2>
             </div>
             <div className="space-y-3">
               {votes.map((vote) => (
@@ -127,7 +124,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
                 Get Started with {currentOrg.name}
               </h2>
               <p className="text-muted-foreground">
-                Create your first department and invite members
+                Organizer setup for departments, members, and vote creation
               </p>
             </div>
             <div className="space-y-3">
@@ -155,7 +152,7 @@ const OrganizationPage = ({ orgId }: OrganizationPageProps) => {
             <h1 className="text-xl md:text-2xl lg:ml-0 ml-5 font-semibold mb-4">
               {currentOrg.name}
             </h1>
-            <NewVotingDialog label="Vote" />
+            <NewVotingDialog label="Create vote" />
           </div>
           <div className="flex flex-nowrap gap-2 overflow-x-auto pb-4 justify-between md:justify-start md:pb-2 md:flex-wrap md:overflow-visible">
             <Button

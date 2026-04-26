@@ -63,7 +63,7 @@ const NewVotingDialog = ({
 
   const handleSubmit = async () => {
     if (!selectedOrgId) {
-      toast.error("Please select an organization first");
+      toast.error("Please select a voting space first");
       return;
     }
 
@@ -159,15 +159,15 @@ const NewVotingDialog = ({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Start a new voting</DialogTitle>
+          <DialogTitle>Create a new vote</DialogTitle>
           <DialogDescription>
-            Start a new voting for your organization.
+            Start a vote inside the selected voting space.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
-              Voting Name
+              Vote Name
               <RequiredIndicator />
             </Label>
             <Input

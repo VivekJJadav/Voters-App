@@ -73,7 +73,9 @@ const Vote = () => {
       <div className="min-h-screen w-full flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6">
-            <p className="text-center text-gray-600">You are not a member of any organization.</p>
+            <p className="text-center text-gray-600">
+              Results will appear after you join a voting space.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -86,7 +88,7 @@ const Vote = () => {
         <div className="max-w-3xl mx-auto">
           <SelectorForm
             values={organizations}
-            placeholder="Select an organization"
+            placeholder="Select a voting space"
             loading={organizationsLoading}
             value={selectedOrgId}
             onChange={(newValue) => {

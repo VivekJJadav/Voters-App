@@ -265,7 +265,7 @@ const NotificationDropdown = () => {
         </ScrollArea>
         <div className="border-t px-4 py-3">
           <p className="text-xs text-slate-500">
-            Notifications are shown across your organizations.
+            Notifications are shown across your voting spaces.
           </p>
         </div>
       </DropdownMenuContent>
